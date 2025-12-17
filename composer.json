@@ -1,0 +1,41 @@
+{
+    "name": "shehacks/app",
+    "description": "SheHacks",
+    "homepage": "https://shehacks.ioh.co.id/",
+	"type": "project",
+    "require": {
+        "php": "^8.1",
+		"ext-intl": "*",
+        "ext-mbstring": "*",
+        "laminas/laminas-escaper": "^2.17",
+        "psr/log": "^3.0",
+		"vlucas/phpdotenv": "^5.6.2",
+        "phpoffice/phpspreadsheet": "^1.16"
+    },
+    "require-dev": {
+        "codeigniter/coding-standard": "^1.7",
+        "fakerphp/faker": "^1.24",
+        "friendsofphp/php-cs-fixer": "^3.47.1",
+        "kint-php/kint": "^6.1",
+        "mikey179/vfsstream": "^1.6.12",
+        "nexusphp/cs-config": "^3.6",
+        "phpunit/phpunit": "^10.5.16 || ^11.2",
+        "predis/predis": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "CodeIgniter\\": "system/"
+        },
+        "exclude-from-classmap": [
+            "**/Database/Migrations/**"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}
