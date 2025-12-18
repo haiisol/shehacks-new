@@ -26,8 +26,8 @@ class MainModel extends Model
             redirect('', 'refresh');
         } else {
 
-            $id_user        = key_auth();
-            $key_token      = $this->session->get('key_token');
+            $id_user = key_auth();
+            $key_token = $this->session->get('key_token');
 
             $builder = $this->db->table('tb_user_2fa');
             $cek_logout_status = $builder->select('logout_status')
@@ -79,7 +79,7 @@ class MainModel extends Model
 
         if ($get_data_akses) {
             if ($get_data_akses['view_data'] == 1) {
-                $response['access_add']    = ($get_data_akses['create_data'] == 0) ? 'd-none' : '';
+                $response['access_add'] = ($get_data_akses['create_data'] == 0) ? 'd-none' : '';
                 $response['access_delete'] = ($get_data_akses['delete_data'] == 0) ? 'd-none' : '';
                 return $response;
             }
@@ -100,9 +100,9 @@ class MainModel extends Model
         $get_data_akses = $this->get_query_menu($param, $get_user['id_role']);
 
         if ($get_data_akses) {
-            $res['access_view']   = ($get_data_akses['view_data'] == 0) ? 'd-none' : '';
-            $res['access_add']    = ($get_data_akses['create_data'] == 0) ? 'd-none' : '';
-            $res['access_edit']   = ($get_data_akses['edit_data'] == 0) ? 'd-none' : '';
+            $res['access_view'] = ($get_data_akses['view_data'] == 0) ? 'd-none' : '';
+            $res['access_add'] = ($get_data_akses['create_data'] == 0) ? 'd-none' : '';
+            $res['access_edit'] = ($get_data_akses['edit_data'] == 0) ? 'd-none' : '';
             $res['access_delete'] = ($get_data_akses['delete_data'] == 0) ? 'd-none' : '';
 
             $res['access_action'] = ($res['access_view'] == 'd-none' && $res['access_add'] == 'd-none' && $res['access_edit'] == 'd-none' && $res['access_delete'] == 'd-none') ? 'd-none' : '';
@@ -204,7 +204,7 @@ class MainModel extends Model
     function Auto_id($column, $part, $table)
     {
         $row = $this->db->query("SELECT MAX(RIGHT($column,3)) as sta FROM $table")->getRow();
-        $id = ($row && $row->sta) ? sprintf("%03s", (int)$row->sta + 1) : "001";
+        $id = ($row && $row->sta) ? sprintf("%03s", (int) $row->sta + 1) : "001";
         return $part . $id;
     }
 
@@ -226,48 +226,39 @@ class MainModel extends Model
         return $this->db->table('tb_admin_web')->where('id', 1)->get()->getRowArray();
     }
 
-    // TODO: Check the rest (model, controller and view)
-
     function get_admin_user()
     {
         $id_admin = decrypt_url($this->session->get('key_auth_admin'));
-        $query = $this->db->query("SELECT * FROM tb_admin_user WHERE id_admin = '" . $id_admin . "' ")->row_array();
 
-        return $query;
+        return $this->db->table('tb_admin_user')
+            ->where('id_admin', $id_admin)
+            ->get()->getRowArray();
     }
-
-
 
     // --------------------------- post visitors ---------------------------
     function post_visitors_2023($page)
     {
-        $this->load->library('user_agent');
+        $agent = $this->request->getUserAgent();
+        $date = date('Y-m-d');
+        $ip = $this->request->getIPAddress();
 
-        $date      = date('Y-m-d');
-        $ipaddress = $_SERVER['REMOTE_ADDR'];
-
-        $visitor = $this->db->query("SELECT * FROM tb_analytic_visitors_2025 WHERE date='" . $date . "' AND page_view='" . $page . "' AND ip_address='" . $ipaddress . "'")->row_array();
+        $visitor = $this->db->table('tb_analytic_visitors_2025')->where(['date' => $date, 'page_view' => $page, 'ip_address' => $ip])->get()->getRowArray();
 
         if ($visitor) {
-            $hits = $visitor['hits'];
-            $this->db->query("UPDATE tb_analytic_visitors_2025 SET hits=$hits+1 WHERE date='" . $date . "' AND page_view='" . $page . "' AND ip_address='" . $ipaddress . "'");
+            $this->db->table('tb_analytic_visitors_2025')->where('id', $visitor['id'])->increment('hits');
         } else {
-            if ($this->agent->is_referral()) {
-                $referrer = $this->agent->referrer();
-            } else {
-                $referrer = base_url();
-            }
+            $referrer = ($agent->isReferral()) ? $agent->getReferrer() : base_url();
+            $this->db->table('tb_analytic_visitors_2025')->insert([
+                'referral' => $referrer,
+                'ip_address' => $ip,
+                'page_view' => $page,
+                'date' => $date,
+                'hits' => 1,
+                'browser' => $agent->getBrowser(),
+                'platform' => $agent->getPlatform(),
+                'waktu' => date('Y-m-d H:i:s')
+            ]);
 
-            $visit['referral']   = $referrer;
-            $visit['ip_address'] = $ipaddress;
-            $visit['page_view']  = $page;
-            $visit['date']       = $date;
-            $visit['hits']       = 1;
-            $visit['browser']    = $this->agent->browser();
-            $visit['platform']   = $this->agent->platform();
-            $visit['waktu']      = date_create('now', timezone_open('Asia/Jakarta'))->format('Y-m-d H:i:s');
-
-            $this->db->insert('tb_analytic_visitors_2025', $visit);
         }
     }
     // --------------------------- end post visitors ---------------------------
@@ -276,62 +267,43 @@ class MainModel extends Model
     // --------------------------- datatables ---------------------------
     function count_all($table, $where)
     {
-        $this->db->from($table);
-        $this->db->where($where);
-        return $this->db->count_all_results();
+        return $this->db->table($table)
+            ->where($where)
+            ->countAllResults();
     }
 
     function total_records($table)
     {
-        $query = $this->db->select("COUNT(*) as total")->get($table)->row();
-
-        if (isset($query)) return $query->total;
-        return 0;
+        return $this->db->table($table)->countAll();
     }
 
     function datatable($valid_columns)
     {
-        $start  = intval($this->input->post('start') ?: $this->input->get('start'));
-        $length = intval($this->input->post('length') ?: $this->input->get('length'));
-        $order  = $this->input->post('order') ?: $this->input->get('order');
-        $search = $this->input->post('search') ?: $this->input->get('search');
-        $search = $search['value'];
-        $col    = 0;
-        $dir    = "";
+        $start = $this->request->getVar('start') ?? 0;
+        $length = $this->request->getVar('length') ?? 10;
+        $order = $this->request->getVar('order');
+        $search = $this->request->getVar('search')['value'] ?? '';
 
-        if (!empty($order)) {
-            foreach ($order as $o) {
-                $col = $o['column'];
-                $dir = $o['dir'];
-            }
-        }
-        if ($dir != "asc" && $dir != "desc") {
-            $dir = "desc";
-        }
-
-        if (!isset($valid_columns[$col])) {
-            $order = null;
-        } else {
-            $order = $valid_columns[$col];
-        }
-
-        if ($order != null) {
-            $this->db->order_by($order, $dir);
+        $builder = $this->db->table($this->table);
+        if ($order) {
+            $col = $order[0]['column'];
+            $dir = $order[0]['dir'] === 'asc' ? 'asc' : 'desc';
+            if (isset($valid_columns[$col]))
+                $builder->orderBy($valid_columns[$col], $dir);
         }
 
         if (!empty($search)) {
-            $x = 0;
-            foreach ($valid_columns as $sterm) {
-                if ($x == 0) {
-                    $this->db->like($sterm, $search);
-                } else {
-                    $this->db->or_like($sterm, $search);
-                }
-                $x++;
+            $builder->groupStart();
+            foreach ($valid_columns as $i => $column) {
+                if ($i === 0)
+                    $builder->like($column, $search);
+                else
+                    $builder->orLike($column, $search);
             }
+            $builder->groupEnd();
         }
 
-        $this->db->limit($length, $start);
+        return $builder->limit($length, $start);
     }
     // --------------------------- end datatables ---------------------------
 
@@ -339,12 +311,14 @@ class MainModel extends Model
     // --------------------------- datatables custom ---------------------------
     function datatable_custom($valid_columns, $group_by, $order_by)
     {
-        $start  = intval($this->input->post('start') ?: $this->input->get('start'));
-        $length = intval($this->input->post('length') ?: $this->input->get('length'));
-        $search = $this->input->post('search') ?: $this->input->get('search');
-        $search = $search['value'];
-        $col    = 0;
-        $dir    = "";
+        $start = intval($this->request->getVar('start'));
+        $length = intval($this->request->getVar('length'));
+        $search = $this->request->getVar('search');
+        $search = $search['value'] ?? '';
+        $order = $this->request->getVar('order');
+
+        $col = 0;
+        $dir = "desc";
 
         if (!empty($order)) {
             foreach ($order as $o) {
@@ -352,60 +326,54 @@ class MainModel extends Model
                 $dir = $o['dir'];
             }
         }
+
         if ($dir != "asc" && $dir != "desc") {
             $dir = "desc";
         }
 
-        if (!isset($valid_columns[$col])) {
-            $order = null;
-        } else {
-            $order = $valid_columns[$col];
+        // Apply Ordering
+        if (isset($valid_columns[$col])) {
+            $this->db->table($this->table)->orderBy($valid_columns[$col], $dir);
         }
 
-        if ($order != null) {
-            $this->db->order_by($order, $dir);
-        }
-
+        // Apply Search
         if (!empty($search)) {
-            $x = 0;
-            foreach ($valid_columns as $sterm) {
-                if ($x == 0) {
-                    $this->db->like($sterm, $search);
+            $builder = $this->db->table($this->table);
+            $builder->groupStart();
+            foreach ($valid_columns as $key => $sterm) {
+                if ($key === 0) {
+                    $builder->like($sterm, $search);
                 } else {
-                    $this->db->or_like($sterm, $search);
+                    $builder->orLike($sterm, $search);
                 }
-                $x++;
             }
+            $builder->groupEnd();
         }
 
         if ($group_by != null) {
-            $this->db->group_by($group_by);
+            $this->db->table($this->table)->groupBy($group_by);
         }
 
         if ($order_by != null) {
-            $this->db->order_by($order_by);
+            $this->db->table($this->table)->orderBy($order_by);
         }
 
-        $this->db->limit($length, $start);
+        $this->db->table($this->table)->limit($length, $start);
     }
     // --------------------------- end datatables custom---------------------------
 
     function cek_token_user($iduser, $token)
     {
-        $this->db->select('id_user');
-        $this->db->where('id_user', $iduser);
-        $this->db->where('token', $token);
-
-        $result = $this->db->get('tb_user')->result_array();
-
-        return $result;
+        return $this->db->table('tb_user')
+            ->select('id_user')
+            ->where('id_user', $iduser)
+            ->where('token', $token)
+            ->get()->getResultArray();
     }
 
     function insert_table($table, $data)
     {
-        $result = $this->db->insert($table, $data);
-
-        return $result;
+        return $this->db->table($table)->insert($data);
     }
 
 
@@ -416,66 +384,60 @@ class MainModel extends Model
         curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        if ($httpCode == 200) {
-            return true;
-        }
+        return ($httpCode == 200);
     }
 
     function url_image($nama_file, $folder_image)
     {
+        $url_api = config('Common')->url_api_file ?? '';
+
         if ($nama_file) {
-            $result = $this->config->item('url_api_file') . $folder_image . '/' . $nama_file;
-        } else {
-            $result = default_image();
+            return $url_api . $folder_image . '/' . $nama_file;
         }
 
-        return $result;
+        return default_image();
     }
 
     function url_image_thumbnail($nama_file, $folder_image)
     {
+        $url_api = config('Common')->url_api_file ?? '';
+
         if ($nama_file) {
             if (file_exists(FCPATH . 'file_media/' . $folder_image . '/Thumbnail-S-' . $nama_file)) {
-                $result = $this->config->item('url_api_file') . $folder_image . '/Thumbnail-S-' . $nama_file;
-            } else {
-                $result = '-';
+                return $url_api . $folder_image . '/Thumbnail-S-' . $nama_file;
             }
-        } else {
-            $result = '-';
         }
 
-        return $result;
+        return '-';
     }
 
     function url_image_admin($nama_file)
     {
+        $url_api = config('Common')->url_api_file ?? '';
+
         if ($nama_file) {
-            $result = $this->config->item('url_api_file') . 'image-admin/' . $nama_file;
-        } else {
-            $result = default_image();
+            return $url_api . 'image-admin/' . $nama_file;
         }
 
-        return $result;
+        return default_image();
     }
 
     function url_banner_popup()
     {
-        $sql = "SELECT c.button_url, c.image  
-                FROM tb_content c 
-                WHERE c.status_delete = 0 
-                AND status = 1
-                AND c.section = 'banner_popup' 
-                ORDER BY c.id DESC LIMIT 1 ";
-
-        $query = $this->db->query($sql)->row_array();
+        $builder = $this->db->table('tb_content c');
+        $query = $builder->select('c.button_url, c.image')
+            ->where('c.status_delete', 0)
+            ->where('status', 1)
+            ->where('c.section', 'banner_popup')
+            ->orderBy('c.id', 'DESC')
+            ->limit(1)
+            ->get()->getRowArray();
 
         if ($query) {
-            $result = $this->main_model->url_image($query['image'], 'image-content');
-        } else {
-            $result = '';
+            return $this->url_image($query['image'], 'image-content');
         }
 
-        return $result;
+        return '';
     }
 
     function tanggal_model($tanggal)
@@ -484,103 +446,68 @@ class MainModel extends Model
         $date_ago = date('Y-m-d', strtotime('-6 days', strtotime($date_now)));
 
         if (date('Y-m-d', strtotime($tanggal)) > $date_ago) {
-
-            $result = time_ago($tanggal);
-        } else {
-
-            $result = date('d M Y H:i', strtotime($tanggal));
+            return time_ago($tanggal);
         }
 
-        return $result;
+        return date('d M Y H:i', strtotime($tanggal));
     }
 
     function getDistanceBetweenPoints($lat1, $lon1, $lat2, $lon2)
     {
         $theta = $lon1 - $lon2;
-        $miles = (sin(deg2rad($lat1)) * sin(deg2rad($lat2))) + (cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta)));
-        $miles = acos($miles);
-        $miles = rad2deg($miles);
-        $miles = $miles * 60 * 1.1515;
-        $feet = $miles * 5280;
-        $yards = $feet / 3;
-        $kilometers = $miles * 1.609344;
-        $meters = $kilometers * 1000;
-
-        if (floor($kilometers) >= 1) {
-            $return = floor($kilometers) . ' Kilometer';
-        } else {
-            $return = floor($meters) . ' Meter';
-        }
-
-        return $return;
+        $miles = acos((sin(deg2rad($lat1)) * sin(deg2rad($lat2))) + (cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta))));
+        $kilometers = rad2deg($miles) * 60 * 1.1515 * 1.609344;
+        return ($kilometers >= 1) ? floor($kilometers) . ' Kilometer' : floor($kilometers * 1000) . ' Meter';
     }
 
-    function _create_thumbs($filename, $dir)
+    function create_thumbs(string $filename, string $dir)
     {
+        $source = FCPATH . 'file_media/' . $dir . '/' . $filename;
+        $target = FCPATH . 'file_media/' . $dir . '/Thumbnail-S-' . $filename;
 
-        $source     = './file_media/' . $dir . '/' . $filename;
-        $source_new = './file_media/' . $dir . '/Thumbnail-S-' . $filename;
+        if (!is_file($source)) {
+            return false;
+        }
 
-        // Image resizing config
-        $config = array(
-            // 150
-            array(
-                'image_library' => 'GD2',
-                'source_image'  => $source,
-                'maintain_ratio' => TRUE,
-                //'width'       => 150,
-                'height'        => 150,
-                'new_image'     => $source_new
-            )
-        );
+        try {
+            Services::image('gd')
+                ->withFile($source)
+                ->resize(
+                    0,
+                    150,
+                    true
+                )
+                ->save($target);
 
-        $this->load->library('image_lib', $config[0]);
-
-        foreach ($config as $item) {
-            $this->image_lib->initialize($item);
-            if (!$this->image_lib->resize()) {
-                return false;
-            }
-            $this->image_lib->clear();
+            return true;
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return false;
         }
     }
 
     function get_umur($tanggal)
     {
-        $tanggal_lahir = date('Y-m-d', strtotime($tanggal));
-        $birthDate = new \DateTime($tanggal_lahir);
+        $birthDate = new \DateTime(date('Y-m-d', strtotime($tanggal)));
         $today = new \DateTime("today");
-        if ($birthDate > $today) {
-            return 0;
-        }
-
-        $y = $today->diff($birthDate)->y;
-        $m = $today->diff($birthDate)->m;
-        $d = $today->diff($birthDate)->d;
-
-        return $y;
+        return ($birthDate > $today) ? 0 : $today->diff($birthDate)->y;
     }
 
     // Login Attempts
     public function get_login_attempts($ip_address, $email = null, $status)
     {
         date_default_timezone_set('Asia/Jakarta');
-        $minutes    = 15;
-        $time_limit = date("Y-m-d H:i:s", strtotime("-$minutes minutes"));
-        $this->db->where('ip_address', $ip_address);
-        if ($email !== null) {
-            $this->db->where('email', $email);
-        }
-
-        $this->db->where('status', $status);
-        $this->db->where('attempt_time >=', $time_limit);
-        return $this->db->count_all_results('tb_user_login_attempts');
+        $builder = $this->db->table('tb_user_login_attempts')->where(['ip_address' => $ip_address, 'status' => $status]);
+        if ($email)
+            $builder->where('email', $email);
+        $builder->where('attempt_time >=', date("Y-m-d H:i:s", strtotime("-15 minutes")));
+        return $builder->countAllResults();
     }
 
     public function record_login_attempt($ip_address, $email = null, $status)
     {
         date_default_timezone_set('Asia/Jakarta');
-        $this->db->insert('tb_user_login_attempts', [
+        $this->db->table('tb_user_login_attempts')->insert([
             'ip_address' => $ip_address,
             'email' => $email,
             'status' => $status,
@@ -590,13 +517,15 @@ class MainModel extends Model
 
     public function clear_login_attempts($ip_address, $email = null, $status)
     {
-        $this->db->where('ip_address', $ip_address);
+        $builder = $this->db->table('tb_user_login_attempts');
+        $builder->where('ip_address', $ip_address);
+
         if ($email !== null) {
-            $this->db->where('email', $email);
+            $builder->where('email', $email);
         }
 
-        $this->db->where('status', $status);
-        $this->db->delete('tb_user_login_attempts');
+        $builder->where('status', $status);
+        return $builder->delete();
     }
 
     // Reset Password Attempts
@@ -604,22 +533,26 @@ class MainModel extends Model
     {
         date_default_timezone_set('Asia/Jakarta');
 
-        $minutes    = 10;
+        $minutes = 10;
         $time_limit = date("Y-m-d H:i:s", strtotime("-$minutes minutes"));
-        $this->db->where('ip_address', $ip_address);
+
+        $builder = $this->db->table('tb_user_reset_password_attempts');
+        $builder->where('ip_address', $ip_address);
+
         if ($email !== null) {
-            $this->db->where('email', $email);
+            $builder->where('email', $email);
         }
 
-        $this->db->where('status', $status);
-        $this->db->where('attempt_time >=', $time_limit);
-        return $this->db->count_all_results('tb_user_reset_password_attempts');
+        $builder->where('status', $status);
+        $builder->where('attempt_time >=', $time_limit);
+
+        return $builder->countAllResults();
     }
 
     public function record_reset_password_attempt($ip_address, $email = null, $status)
     {
         date_default_timezone_set('Asia/Jakarta');
-        $this->db->insert('tb_user_reset_password_attempts', [
+        return $this->db->table('tb_user_reset_password_attempts')->insert([
             'ip_address' => $ip_address,
             'email' => $email,
             'status' => $status,
@@ -629,15 +562,17 @@ class MainModel extends Model
 
     public function clear_reset_password_attempts($ip_address, $email = null, $status = null)
     {
-        $this->db->where('ip_address', $ip_address);
+        $builder = $this->db->table('tb_user_reset_password_attempts');
+        $builder->where('ip_address', $ip_address);
+
         if ($email !== null) {
-            $this->db->where('email', $email);
+            $builder->where('email', $email);
         }
 
         if ($status !== null) {
-            $this->db->where('status', $status);
+            $builder->where('status', $status);
         }
 
-        $this->db->delete('tb_user_reset_password_attempts');
+        return $builder->delete();
     }
 }
