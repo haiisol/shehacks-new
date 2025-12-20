@@ -1,81 +1,80 @@
 <?php
 
-use App\Controllers\BaseController;
+namespace App\Controllers;
+
 use Config\Database;
 use Config\Services;
 use App\Models\MainModel;
+use App\Models\UserModel;
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
+use Psr\Log\LoggerInterface;
 
-class Home extends BaseController
+class Home extends FrontController
 {
     protected $db;
     protected $validation;
     protected $mainModel;
+    protected $userModel;
 
-    public function __construct()
+    public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
+        parent::initController($request, $response, $logger);
         
-        helper(['url', 'form']);
         $this->db = Database::connect();
         $this->validation = Services::validation();
 
         $this->mainModel = new MainModel();
+        $this->userModel = new UserModel();
     }
 
     public function index()
     {
-        $web = $this->mainModel->get_admin_web();
-
-        if ($web['under_construction'] == 'false') {
-            if ($web['event_running'] == 'true') {
-                if ($web['coming_soon'] == 1) {
-                    $data['coming_soon_date'] = $web['coming_soon_date'];
-                    $data['page'] = 'page/coming_soon';
+        if (!$this->data['under_construction']) {
+            if ($this->data['event_running']) {
+                if ($this->data['web']['coming_soon'] == 1) {
+                    $this->data['coming_soon_date'] = $this->data['web']['coming_soon_date'];
+                    $this->data['page'] = 'page/coming_soon';
                 } else {
-                    $data['page'] = 'home';
+                    $this->data['page'] = 'home';
                 }
             } else {
-                $data['page'] = 'home_announcement';
+                $this->data['page'] = 'home_announcement';
             }
         } else {
-            $data['page'] = 'page/under_construction';
+            $this->data['page'] = 'page/under_construction';
         }
 
-        $data['title'] = '';
-        $data['description'] = '';
-        $data['keywords'] = '';
-        
-        return view('index', $data);
+        return view('index', $this->data);
     }
 
     function coming_soon()
     {
-        $web = $this->mainModel->get_admin_web();
+        $this->data['coming_soon_date'] = $this->data['web']['coming_soon_date'];
 
-        $data['coming_soon_date'] = $web['coming_soon_date'];
-
-        $data['title'] = '';
-        $data['description'] = '';
-        $data['keywords'] = '';
-        $data['page'] = 'page/coming_soon';
-        return view('index', $data);
+        $this->data['title'] = '';
+        $this->data['description'] = '';
+        $this->data['keywords'] = '';
+        $this->data['page'] = 'page/coming_soon';
+        return view('index', $this->data);
     }
 
     function preview()
     {
-        $data['title'] = 'Preview';
-        $data['description'] = '';
-        $data['keywords'] = '';
-        $data['page'] = 'home';
-        return view('index', $data);
+        $this->data['title'] = 'Preview';
+        $this->data['description'] = '';
+        $this->data['keywords'] = '';
+        $this->data['page'] = 'home';
+        return view('index', $this->data);
     }
 
     function preview_voting()
     {
-        $data['title'] = 'Preview Voting';
-        $data['description'] = '';
-        $data['keywords'] = '';
-        $data['page'] = 'home_voting';
-        return view('index', $data);
+        $this->data['title'] = 'Preview Voting';
+        $this->data['description'] = '';
+        $this->data['keywords'] = '';
+        $this->data['page'] = 'home_voting';
+        return view('index', $this->data);
     }
 
     public function valid_alfabet($str)
@@ -141,7 +140,7 @@ class Home extends BaseController
 
     function post_contact()
     {
-        $secret = '6LfAu4MlAAAAAIBAk925mhEEj0T7PDyIuuBGjVIX';
+        $secret = env('recaptcha.secret');
         $captchaToken = $this->request->getPost('g-recaptcha-response');
 
         $verify = file_get_contents(

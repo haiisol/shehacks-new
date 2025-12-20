@@ -387,30 +387,6 @@ class MainModel extends Model
         return ($httpCode == 200);
     }
 
-    function url_image($nama_file, $folder_image)
-    {
-        $url_api = config('Common')->url_api_file ?? '';
-
-        if ($nama_file) {
-            return $url_api . $folder_image . '/' . $nama_file;
-        }
-
-        return default_image();
-    }
-
-    function url_image_thumbnail($nama_file, $folder_image)
-    {
-        $url_api = config('Common')->url_api_file ?? '';
-
-        if ($nama_file) {
-            if (file_exists(FCPATH . 'file_media/' . $folder_image . '/Thumbnail-S-' . $nama_file)) {
-                return $url_api . $folder_image . '/Thumbnail-S-' . $nama_file;
-            }
-        }
-
-        return '-';
-    }
-
     function url_image_admin($nama_file)
     {
         $url_api = config('Common')->url_api_file ?? '';
@@ -424,17 +400,17 @@ class MainModel extends Model
 
     function url_banner_popup()
     {
-        $builder = $this->db->table('tb_content c');
-        $query = $builder->select('c.button_url, c.image')
-            ->where('c.status_delete', 0)
+        $builder = $this->db->table('tb_content');
+        $query = $builder->select('button_url, image')
+            ->where('status_delete', 0)
             ->where('status', 1)
-            ->where('c.section', 'banner_popup')
-            ->orderBy('c.id', 'DESC')
+            ->where('section', 'banner_popup')
+            ->orderBy('id', 'DESC')
             ->limit(1)
             ->get()->getRowArray();
 
         if ($query) {
-            return $this->url_image($query['image'], 'image-content');
+            return url_image($query['image'], 'image-content');
         }
 
         return '';
@@ -494,7 +470,7 @@ class MainModel extends Model
     }
 
     // Login Attempts
-    public function get_login_attempts($ip_address, $email = null, $status)
+    public function get_login_attempts($ip_address, $email = null, $status = '')
     {
         date_default_timezone_set('Asia/Jakarta');
         $builder = $this->db->table('tb_user_login_attempts')->where(['ip_address' => $ip_address, 'status' => $status]);
@@ -504,7 +480,7 @@ class MainModel extends Model
         return $builder->countAllResults();
     }
 
-    public function record_login_attempt($ip_address, $email = null, $status)
+    public function record_login_attempt($ip_address, $email = null, $status = '')
     {
         date_default_timezone_set('Asia/Jakarta');
         $this->db->table('tb_user_login_attempts')->insert([
@@ -515,7 +491,7 @@ class MainModel extends Model
         ]);
     }
 
-    public function clear_login_attempts($ip_address, $email = null, $status)
+    public function clear_login_attempts($ip_address, $email = null, $status = '')
     {
         $builder = $this->db->table('tb_user_login_attempts');
         $builder->where('ip_address', $ip_address);
@@ -529,7 +505,7 @@ class MainModel extends Model
     }
 
     // Reset Password Attempts
-    public function get_reset_password_attempts($ip_address, $email = null, $status)
+    public function get_reset_password_attempts($ip_address, $email = null, $status = '')
     {
         date_default_timezone_set('Asia/Jakarta');
 
@@ -549,7 +525,7 @@ class MainModel extends Model
         return $builder->countAllResults();
     }
 
-    public function record_reset_password_attempt($ip_address, $email = null, $status)
+    public function record_reset_password_attempt($ip_address, $email = null, $status = '')
     {
         date_default_timezone_set('Asia/Jakarta');
         return $this->db->table('tb_user_reset_password_attempts')->insert([

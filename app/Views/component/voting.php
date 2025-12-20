@@ -14,7 +14,7 @@
 <script type="text/javascript">
     $(document).ready(function() {
 
-        var logged_in_front = '<?php echo $this->session->userdata('logged_in_front'); ?>';
+        var logged_in_front = '<?php echo $logged_in_front; ?>';
 
         // --------------------------- load data voting ---------------------------
             load_data_voting();
@@ -22,7 +22,6 @@
             function load_data_voting() {
                 
                 $.ajax({
-                    method   : 'POST',
                     url      : '<?php echo base_url();?>fetch/fetch_data/fetch_data_voting',
                     dataType : 'json',
                     beforeSend: function() {},

@@ -1,22 +1,6 @@
 <?php 
-    $web = $this->main_model->get_admin_web(); 
-    $logged_in_front = $this->session->userdata('logged_in_front');
-    
-    if ($web['logo']) {
-        $logo = $this->main_model->url_image($web['logo'], 'image-logo');
-    }
-
-    if ($web['logo_sponsor']) {
-        $logo_sponsor = $this->main_model->url_image($web['logo_sponsor'], 'image-logo');
-    }
-
-    if ($logged_in_front == TRUE) {
-        $id_user = key_auth();
-        $get_user = $this->db->query("SELECT nama FROM tb_user WHERE id_user = ".$id_user." ")->row_array();
-    }
-
     // Kondisi demo 2025
-    if ($web['event_running'] == 'false') {
+    if (!$event_running) {
         if ($page != 'home_announcement' AND $page != 'page/coming_soon' AND $page != 'artikel/artikel' AND $page != 'page/faq' AND $page != 'page/contact' AND $page != 'page/webinar') {
             $menu = 'show';
         } else {
@@ -31,12 +15,12 @@
     <div class="container">
         <div class="navbar-inner">
             <div class="navbar-brand">
-                <?php if ($web['logo']) { ?>
+                <?php if ($logo) { ?>
                     <a class="brand-item" href="<?php echo base_url(); ?>">
-                        <img src="<?= before_load(); ?>" data-src="<?php echo $logo; ?>" alt="<?php echo $web['name']; ?>" width="180" height="50" class="img-fluid lazyload brand-img mt-1">
+                        <img src="<?= before_load(); ?>" data-src="<?php echo $logo; ?>" alt="<?php echo $site_name; ?>" width="180" height="50" class="img-fluid lazyload brand-img mt-1">
                     </a>
                 <?php } ?>
-                <?php if ($web['logo_sponsor']) { ?>
+                <?php if ($logo_sponsor) { ?>
                     <a class="brand-item" href="<?php echo base_url(); ?>">
                         <img src="<?= before_load(); ?>" data-src="<?php echo $logo_sponsor; ?>" alt="Sponsor" width="180" height="50" class="img-fluid lazyload brand-img">
                     </a>
@@ -92,7 +76,7 @@
                     <?php if ($logged_in_front == FALSE) { ?>
                         
                         <?php 
-                            if ($web['register_button'] == 'true') {
+                            if ($register_button) {
                                 $btn_nav = 'Masuk/Daftar';
                             } else {
                                 $btn_nav = ($menu == 'show' ? 'Masuk/Daftar' : 'Masuk');
@@ -106,7 +90,7 @@
                     <?php } else { ?>
                         <div class="nav-item nav-item-user dropdown">
                             <a class="nav-link dropdown-toggle" href="#" onclick="event.preventDefault();" data-bs-toggle="dropdown">
-                                <div class="img-user"><?php echo strtoupper($this->main_model->initial_value($get_user['nama'])); ?></div>
+                                <div class="img-user"><?php echo strtoupper($user_name); ?></div>
                             </a>
 
                             <ul class="dropdown-menu dropdown-menu-end">

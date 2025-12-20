@@ -14,7 +14,7 @@
                         'class' => 'btn btn-hover-arrow-right',
                         'attributes' => 'data="Footer CTA Daftar"'
                     ]; 
-                    $this->load->view('component/ui/button_register', $data); 
+                    echo view('component/ui/button_register', $data); 
                 ?>
             </div>
         </div>

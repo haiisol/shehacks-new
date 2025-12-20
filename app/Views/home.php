@@ -1,11 +1,9 @@
 
-<?php $this->load->view('component/section/hero_image'); ?>
-
 <?php 
-    $web = $this->main_model->get_admin_web(); 
+    echo view('component/section/hero_image');
 
-    if ($web['voting_running'] == 'true') {
-        $this->load->view('component/voting'); 
+    if ($voting_running) {
+        echo view('component/voting'); 
     } 
 ?>
 
@@ -38,7 +36,7 @@
                             'class' => 'btn btn-white btn-hover-arrow-right fix',
                             'attributes' => ''
                         ];
-                        $this->load->view('component/ui/button_register', $data); 
+                        echo view('component/ui/button_register', $data); 
                     ?>
                 </div>
 
@@ -61,13 +59,13 @@
     </div>
 </section>
 
-<?php $this->load->view('component/section/partner'); ?>
+<?php echo view('component/section/partner'); ?>
 
 <div class="bg-gradient-1 wrap-sec-1 section">
-    <?php $this->load->view('component/section/cerita_inspiratif'); ?>
+    <?php echo view('component/section/cerita_inspiratif'); ?>
 </div>
 
-<?php $this->load->view('component/section/cta'); ?>
+<?php echo view('component/section/cta'); ?>
 
 
 <div class="modal modal-style style-2 fade voting-success" id="voting-success" aria-hidden="true" aria-labelledby="ModalToggleLabel" tabindex="2">
@@ -93,7 +91,7 @@
 <script>
     $(document).ready(function() {
 
-        var logged_in_front = '<?php echo $this->session->userdata('logged_in_front'); ?>';
+        var logged_in_front = '<?php echo $logged_in_front; ?>';
 
         /* --------------------------- load data intro header --------------------------- */
             $.ajax({
@@ -108,8 +106,8 @@
 
                         $.each(response.data, function(i, val) {
 
-                            var btn_reg_stat = "<?php echo $web['register_button']; ?>";
-                            var web_running  = "<?php echo $web['event_running']; ?>";
+                            var btn_reg_stat = "<?php echo $register_button; ?>";
+                            var web_running  = "<?php echo $event_running; ?>";
 
                             var btn_reg = '';
 

@@ -59,8 +59,8 @@ function json_response($data = [], $status_code = 200)
 
     $response = Services::response();
     return $response->setStatusCode($status_code)
-                    ->setContentType('application/json')
-                    ->setBody(json_encode($data));
+        ->setContentType('application/json')
+        ->setBody(json_encode($data));
 }
 
 function period()
@@ -73,6 +73,30 @@ function default_image()
     $file = base_url() . 'assets/backoffice/images/no-image.png';
 
     return $file;
+}
+
+function url_image($nama_file, $folder_image)
+{
+    $url_api = config('Common')->url_api_file ?? '';
+
+    if ($nama_file) {
+        return $url_api . $folder_image . '/' . $nama_file;
+    }
+
+    return default_image();
+}
+
+function url_image_thumbnail($nama_file, $folder_image)
+{
+    $url_api = config('Common')->url_api_file ?? '';
+
+    if ($nama_file) {
+        if (file_exists(FCPATH . 'file_media/' . $folder_image . '/Thumbnail-S-' . $nama_file)) {
+            return $url_api . $folder_image . '/Thumbnail-S-' . $nama_file;
+        }
+    }
+
+    return '-';
 }
 
 function before_load()
@@ -133,8 +157,7 @@ function url_modul_edukasi($modul, $id_modul)
 
 function key_auth()
 {
-    $session = Services::session();
-    return decrypt_url($session->get('key_auth'));
+    return decrypt_url(session()->get('key_auth'));
 }
 
 // --------------------------- time ago ---------------------------

@@ -1,7 +1,7 @@
 <script>
     const CSRF = {
-        name: <?= json_encode($this->security->get_csrf_token_name(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>,
-        hash: <?= json_encode($this->security->get_csrf_hash(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>
+        name: <?= json_encode(csrf_token(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>,
+        hash: <?= json_encode(csrf_hash(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>
     };
 
     let ajaxMethod = '';

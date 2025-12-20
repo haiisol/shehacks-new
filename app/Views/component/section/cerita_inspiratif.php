@@ -1,5 +1,3 @@
-<?php $web = $this->main_model->get_admin_web(); ?>
-
 <section class="testimonial-section section section-lg wrap-cerita-alumni">
     <div class="container">
         <div class="head-inner">    
