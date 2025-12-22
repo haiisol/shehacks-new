@@ -76,7 +76,7 @@ class StartupsData extends BaseController
         $sql_main = $this->_sql('main');
 
         if ($sql_main['error']) {
-            return $this->response->setJSON(['status' => 0, 'message' => $sql_main['messages']]);
+            return json_response(['status' => 0, 'message' => $sql_main['messages']]);
         }
 
         $query = $sql_main['query']->getResultArray();
@@ -110,7 +110,7 @@ class StartupsData extends BaseController
         $sql_second = $this->_sql('second');
         $load_more  = (!empty($sql_second['query']->getResultArray())) ? 1 : 0;
 
-        return $this->response->setJSON([
+        return json_response([
             'data'      => $data,
             'offset'    => $sql_main['offset_end'],
             'load_more' => $load_more,
@@ -124,7 +124,7 @@ class StartupsData extends BaseController
         $id_enc = $this->request->getGet('id_enc');
 
         if (empty($id_enc) || !preg_match('/^[a-zA-Z0-9]+$/', $id_enc)) {
-            return $this->response->setJSON(['status' => 0, 'message' => 'Invalid ID']);
+            return json_response(['status' => 0, 'message' => 'Invalid ID']);
         }
 
         $id = decrypt_url($id_enc);
@@ -155,10 +155,10 @@ class StartupsData extends BaseController
                 ];
             }
 
-            return $this->response->setJSON(['data' => $data, 'status' => 1, 'message' => 'Success']);
+            return json_response(['data' => $data, 'status' => 1, 'message' => 'Success']);
         }
 
-        return $this->response->setJSON(['status' => 0, 'message' => 'Data not found']);
+        return json_response(['status' => 0, 'message' => 'Data not found']);
     }
 
     private function _fetch_tags($id_startup)

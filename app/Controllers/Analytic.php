@@ -1,8 +1,6 @@
 <?php
 
 namespace App\Controllers;
-
-use CodeIgniter\Controller;
 use Config\Database;
 
 class Analytic extends BaseController
@@ -27,7 +25,7 @@ class Analytic extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            return $this->response->setJSON([
+            return json_response([
                 'status'  => 0,
                 'message' => $this->validator->getErrors(),
                 'csrf_hash' => csrf_hash()
@@ -36,7 +34,7 @@ class Analytic extends BaseController
 
         // 3. Exception Check
         if (in_array($page, ['artikel/artikel_detail', 'modul/master_modul'])) {
-            return $this->response->setJSON(['status' => 0]);
+            return json_response(['status' => 0]);
         }
 
         // 4. Gather Agent Data
@@ -73,7 +71,7 @@ class Analytic extends BaseController
             $builder->insert($data);
         }
 
-        return $this->response->setJSON([
+        return json_response([
             'status'    => 1,
             'message'   => 'Success.',
             'csrf_hash' => csrf_hash()
@@ -91,7 +89,7 @@ class Analytic extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            return $this->response->setJSON([
+            return json_response([
                 'status'  => 0,
                 'message' => $this->validator->getErrors(),
                 'csrf_hash' => csrf_hash()
@@ -123,7 +121,7 @@ class Analytic extends BaseController
             $builder->insert($visit);
         }
 
-        return $this->response->setJSON([
+        return json_response([
             'status'    => 1,
             'message'   => 'Success',
             'csrf_hash' => csrf_hash()
@@ -136,7 +134,7 @@ class Analytic extends BaseController
         $id_blog = decrypt_url($this->request->getPost('id_enc'));
 
         if (empty($id_blog)) {
-            return $this->response->setJSON(['status' => 0, 'message' => 'Invalid ID', 'csrf_hash' => csrf_hash()]);
+            return json_response(['status' => 0, 'message' => 'Invalid ID', 'csrf_hash' => csrf_hash()]);
         }
 
         // 2. Prepare Data
@@ -165,7 +163,7 @@ class Analytic extends BaseController
             ]);
         }
 
-        return $this->response->setJSON(['status' => 1, 'message' => 'Success', 'csrf_hash' => csrf_hash()]);
+        return json_response(['status' => 1, 'message' => 'Success', 'csrf_hash' => csrf_hash()]);
     }
 
     public function post_startups_viewer()
@@ -173,7 +171,7 @@ class Analytic extends BaseController
         $id_startups = decrypt_url($this->request->getPost('id_enc'));
 
         if (empty($id_startups)) {
-            return $this->response->setJSON(['status' => 0, 'message' => 'Invalid ID', 'csrf_hash' => csrf_hash()]);
+            return json_response(['status' => 0, 'message' => 'Invalid ID', 'csrf_hash' => csrf_hash()]);
         }
 
         $agent    = $this->request->getUserAgent();
@@ -199,7 +197,7 @@ class Analytic extends BaseController
             ]);
         }
 
-        return $this->response->setJSON(['status' => 1, 'message' => 'Success', 'csrf_hash' => csrf_hash()]);
+        return json_response(['status' => 1, 'message' => 'Success', 'csrf_hash' => csrf_hash()]);
     }
 
     public function post_webinar_viewer()
@@ -227,6 +225,6 @@ class Analytic extends BaseController
             ]);
         }
 
-        return $this->response->setJSON(['status' => 1, 'message' => 'Success', 'csrf_hash' => csrf_hash()]);
+        return json_response(['status' => 1, 'message' => 'Success', 'csrf_hash' => csrf_hash()]);
     }
 }

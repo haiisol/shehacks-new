@@ -15,8 +15,6 @@ class Startups extends FrontController
         $data = [
             'sector'      => $sectorModel->getActiveSectors(),
             'title'       => 'Startup Alumni SheHacks',
-            'description' => '',
-            'keywords'    => '',
             'page'        => 'startups/startups'
         ];
 

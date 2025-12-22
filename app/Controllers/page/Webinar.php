@@ -1,89 +1,105 @@
-<?php defined('BASEPATH') OR exit('No direct script access allowed');
+<?php
 
-class Webinar extends CI_Controller {
+namespace App\Controllers\Page;
 
-    public function __construct() {
-        parent::__construct();
-    }
-    
+use App\Controllers\FrontController;
+use Config\Services;
+
+class Webinar extends FrontController
+{
     public function index()
     {
-        $data['title']       = 'Webinar';
-        $data['description'] = '';
-        $data['keywords']    = '';
-        $data['page']        = 'page/webinar';
-        $this->load->view('index', $data);
+        $data = [
+            'title' => 'Webinar',
+            'page' => 'page/webinar'
+        ];
+
+        $this->data = array_merge($this->data, $data);
+
+        return view('index', $this->data);
     }
 
-    function fetch_data_webinar()
-    {   
-        $this->load->library('form_validation');
-        $row = array(
-            "limit"         => (int) $this->input->post('limit', TRUE),
-            "offset"        => (int) $this->input->post('offset', TRUE),
-        ); 
+    public function fetch_data_webinar()
+    {
+        try {
 
-        $this->form_validation->set_data($row);
-        $this->form_validation->set_rules('limit', 'limit', 'trim|required|numeric');
-        $this->form_validation->set_rules('offset', 'offset', 'trim|required|numeric');
+            $validation = Services::validation();
 
-        if ( $this->form_validation->run() === false ) {
-            $response['status']  = 0;
-            $response['message'] = validation_errors();
-            json_response($response);
-            return;
-        }
+            $dataInput = [
+                'limit' => (int) $this->request->getGet('limit'),
+                'offset' => (int) $this->request->getGet('offset'),
+            ];
 
-        $limit_post     = (int) $this->input->post('limit', TRUE);
-        $offset_post    = (int) $this->input->post('offset', TRUE);
-        
-        if ($offset_post == 0) {
-            $offset     = 0;
-            $offset_end = $offset + $limit_post;
-        } else {
-            $offset_end = $offset_post + $limit_post;
-            $offset     = $offset_end;
-        }
+            $validation->setRules([
+                'limit' => 'required|numeric',
+                'offset' => 'required|numeric'
+            ]);
 
-        $query = $this->db->select('c.id_webinar, c.judul, c.kode_youtube')
-                ->from('tb_webinar c')
-                ->where('c.status_delete', 0)
-                ->order_by('c.id_webinar', 'DESC')
-                ->limit($limit_post, $offset_post)
+            if (!$validation->run($dataInput)) {
+                return json_response([
+                    'status' => 0,
+                    'message' => $validation->getErrors()
+                ]);
+            }
+
+            $limit = $dataInput['limit'];
+            $offset = $dataInput['offset'];
+
+            // calculate next offset
+            if ($offset == 0) {
+                $offsetEnd = $limit;
+            } else {
+                $offsetEnd = $offset + $limit;
+            }
+
+            $db = \Config\Database::connect();
+
+            // ---------- MAIN DATA ----------
+            $query = $db->table('tb_webinar')
+                ->select('id_webinar, judul, kode_youtube')
+                ->where('status_delete', 0)
+                ->orderBy('id_webinar', 'DESC')
+                ->limit($limit, $offset)
                 ->get()
-                ->result_array();
-        
-        $data = array();
+                ->getResultArray();
 
-        foreach ($query as $key) {
+            $data = [];
 
-            $row['id_webinar']  = $key['id_webinar'];
-            $row['heading']     = $key['judul'];
-            $row['video']       = $key['kode_youtube'];
+            foreach ($query as $row) {
+                $data[] = [
+                    'id_webinar' => $row['id_webinar'],
+                    'heading' => $row['judul'],
+                    'video' => $row['kode_youtube']
+                ];
+            }
 
-            array_push($data, $row);
+            // ---------- CHECK NEXT LOAD ----------
+            $checkNext = $db->table('tb_webinar')
+                ->select('id_webinar')
+                ->where('status_delete', 0)
+                ->orderBy('id_webinar', 'DESC')
+                ->limit($limit, $offsetEnd)
+                ->get()
+                ->getResultArray();
+
+            $loadMore = !empty($checkNext) ? 1 : 0;
+
+            return json_response([
+                'data' => $data,
+                'offset' => $offsetEnd,
+                'load_more' => $loadMore,
+                'status' => 1,
+                'message' => 'Success'
+            ]);
+
+        } catch (\Throwable $e) {
+
+            return json_response([
+                'data' => [],
+                'status' => 0,
+                'message' => 'Database Error',
+                'error' => $e->getMessage()
+            ], 400);
         }
-
-        // check next load
-        $sql_cek_load_more = "
-            SELECT c.id_webinar 
-                FROM tb_webinar c 
-                WHERE c.status_delete = 0 
-                ORDER BY c.id_webinar DESC
-            LIMIT ".$limit_post." 
-            OFFSET ".$offset_end." ";
-
-        $query_cek = $this->db->query($sql_cek_load_more)->result_array();
-
-        if ($query_cek) { $load_more = 1; } else { $load_more = 0; }
-        
-        $response['data']       = $data;
-        $response['offset']     = $offset_end;
-        $response['load_more']  = $load_more;
-        $response['status']     = 1;
-        $response['message']    = 'Success';
-
-        json_response($response);
     }
-
 }

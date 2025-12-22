@@ -108,7 +108,7 @@ trait ResponseTrait
 
         if ($output !== null) {
             if ($this->format === 'json') {
-                return $this->response->setJSON($output)->setStatusCode($status, $message);
+                return json_response($output)->setStatusCode($status, $message);
             }
 
             if ($this->format === 'xml') {

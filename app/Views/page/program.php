@@ -1,5 +1,3 @@
-<?php $web = $this->main_model->get_admin_web(); ?>
-
 <section class="intro-section program section section-sm">
     <img src="<?= before_load() ?>" data-src="<?php echo base_url();?>assets/front/img/background/p1.webp" alt="Image" class="img-fluid lazyload p1">
     <div class="container">
@@ -132,7 +130,8 @@
                             'text' => 'Daftar Sekarang',
                             'attributes' => 'data="Daftar"'
                         ]; 
-                        $this->load->view('component/ui/button_register', $data); 
+
+                        echo view('component/ui/button_register', $data); 
                     ?>
                 </div>
             </div>
@@ -189,7 +188,7 @@
     </div>
 </section>
 
-<?php $this->load->view('component/section/cta'); ?>
+<?php echo view('component/section/cta'); ?>
 
 
 <script type="text/javascript">

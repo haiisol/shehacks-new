@@ -1,10 +1,10 @@
-<?php defined('BASEPATH') OR exit('No direct script access allowed');
+<?php 
 
-class Gallery extends CI_Controller {
+namespace App\Controllers\Page;
 
-    public function __construct() {
-        parent::__construct();
-    }
+use App\Controllers\FrontController;
+
+class Gallery extends FrontController {
     
     // public function index()
     // {

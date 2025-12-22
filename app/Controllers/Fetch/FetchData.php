@@ -73,7 +73,7 @@ class FetchData extends BaseController
             }
         }
 
-        return $this->response->setJSON([
+        return json_response([
             'data_mvp' => $data_mvp,
             'data_ide' => $data_ide,
             'status'   => 1,
@@ -88,7 +88,7 @@ class FetchData extends BaseController
         $id_voting = decrypt_url($id_voting_enc);
 
         if (!$logged_in_front) {
-            return $this->response->setJSON(['status' => 0, 'message' => 'Silahkan login terlebih dahulu.']);
+            return json_response(['status' => 0, 'message' => 'Silahkan login terlebih dahulu.']);
         }
 
         $year = date('Y');
@@ -100,7 +100,7 @@ class FetchData extends BaseController
             AND YEAR(date_create) = ?", [$id_user, $year])->getRowArray();
 
         if ($get_vote) {
-            return $this->response->setJSON(['status' => 0, 'message' => 'Gagal, Anda sudah pernah voting']);
+            return json_response(['status' => 0, 'message' => 'Gagal, Anda sudah pernah voting']);
         }
 
         $data = [
@@ -115,10 +115,10 @@ class FetchData extends BaseController
             $data_update['total_voting'] = $get_vote['total_voting'] + 1;
             $this->mainModel->update_data('tb_voting', $data_update, 'id_voting', $id_voting);
 
-            return $this->response->setJSON(['status' => 1, 'message' => 'Success.']);
+            return json_response(['status' => 1, 'message' => 'Success.']);
         }
 
-        return $this->response->setJSON(['status' => 0, 'message' => 'Failed.']);
+        return json_response(['status' => 0, 'message' => 'Failed.']);
     }
 
     public function fetch_data_intro()
@@ -126,7 +126,7 @@ class FetchData extends BaseController
         $param = $this->request->getGet('param');
 
         if (empty($param)) {
-            return $this->response->setJSON(['status' => 0, 'message' => 'The param field is required.']);
+            return json_response(['status' => 0, 'message' => 'The param field is required.']);
         }
 
         $builder = $this->db->table('tb_content');
@@ -154,7 +154,7 @@ class FetchData extends BaseController
             ];
         }
 
-        return $this->response->setJSON([
+        return json_response([
             'data'    => $data,
             'status'  => 1,
             'message' => 'Success'
@@ -180,7 +180,7 @@ class FetchData extends BaseController
             ];
         }
 
-        return $this->response->setJSON([
+        return json_response([
             'data'    => $data,
             'status'  => 1,
             'message' => 'Success'
@@ -208,7 +208,7 @@ class FetchData extends BaseController
             ];
         }
 
-        return $this->response->setJSON(['data' => $data, 'status' => 1, 'message' => 'Success']);
+        return json_response(['data' => $data, 'status' => 1, 'message' => 'Success']);
     }
 
     public function fetch_data_agenda()
@@ -232,7 +232,7 @@ class FetchData extends BaseController
             ];
         }
 
-        return $this->response->setJSON(['data' => $data, 'status' => 1, 'message' => 'Success']);
+        return json_response(['data' => $data, 'status' => 1, 'message' => 'Success']);
     }
 
     public function fetch_data_artikel()
@@ -264,7 +264,7 @@ class FetchData extends BaseController
             ];
         }
 
-        return $this->response->setJSON(['data' => $data, 'status' => 1, 'message' => 'Success']);
+        return json_response(['data' => $data, 'status' => 1, 'message' => 'Success']);
     }
 
     public function fetch_data_artikel_alumni()
@@ -297,7 +297,7 @@ class FetchData extends BaseController
             ];
         }
 
-        return $this->response->setJSON(['data' => $data, 'status' => 1, 'message' => 'Success']);
+        return json_response(['data' => $data, 'status' => 1, 'message' => 'Success']);
     }
 
     public function fetch_data_video()
@@ -318,7 +318,7 @@ class FetchData extends BaseController
             ];
         }
 
-        return $this->response->setJSON([
+        return json_response([
             'data'    => $data,
             'status'  => 1,
             'message' => 'Success'
@@ -345,7 +345,7 @@ class FetchData extends BaseController
             ];
         }
 
-        return $this->response->setJSON([
+        return json_response([
             'data'    => $data,
             'status'  => 1,
             'message' => 'Success'
@@ -390,10 +390,10 @@ class FetchData extends BaseController
                 ];
             }
 
-            return $this->response->setJSON(['data' => $data, 'status' => 1, 'message' => 'Yess']);
+            return json_response(['data' => $data, 'status' => 1, 'message' => 'Yess']);
         }
 
-        return $this->response->setJSON(['data' => [], 'status' => 0, 'message' => 'Noo']);
+        return json_response(['data' => [], 'status' => 0, 'message' => 'Noo']);
     }
 
     public function fetch_data_faq()
@@ -417,10 +417,10 @@ class FetchData extends BaseController
         $query = $builder->orderBy('id', 'ASC')->get()->getResultArray();
 
         if ($query) {
-            return $this->response->setJSON(['data' => $query, 'status' => 1, 'message' => 'Yess']);
+            return json_response(['data' => $query, 'status' => 1, 'message' => 'Yess']);
         }
 
-        return $this->response->setJSON(['data' => [], 'status' => 0, 'message' => 'Noo']);
+        return json_response(['data' => [], 'status' => 0, 'message' => 'Noo']);
     }
 
     public function fetch_data_banner_popup()
@@ -443,9 +443,9 @@ class FetchData extends BaseController
         }
 
         if (!empty($data)) {
-            return $this->response->setJSON(['data' => $data, 'status' => 1, 'message' => 'Success']);
+            return json_response(['data' => $data, 'status' => 1, 'message' => 'Success']);
         }
 
-        return $this->response->setJSON(['data' => [], 'status' => 0, 'message' => 'Gagal']);
+        return json_response(['data' => [], 'status' => 0, 'message' => 'Gagal']);
     }
 }

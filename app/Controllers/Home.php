@@ -52,9 +52,6 @@ class Home extends FrontController
     {
         $this->data['coming_soon_date'] = $this->data['web']['coming_soon_date'];
 
-        $this->data['title'] = '';
-        $this->data['description'] = '';
-        $this->data['keywords'] = '';
         $this->data['page'] = 'page/coming_soon';
         return view('index', $this->data);
     }
@@ -62,8 +59,6 @@ class Home extends FrontController
     function preview()
     {
         $this->data['title'] = 'Preview';
-        $this->data['description'] = '';
-        $this->data['keywords'] = '';
         $this->data['page'] = 'home';
         return view('index', $this->data);
     }
@@ -71,8 +66,6 @@ class Home extends FrontController
     function preview_voting()
     {
         $this->data['title'] = 'Preview Voting';
-        $this->data['description'] = '';
-        $this->data['keywords'] = '';
         $this->data['page'] = 'home_voting';
         return view('index', $this->data);
     }
@@ -101,7 +94,7 @@ class Home extends FrontController
         ];
 
         if (!$this->validation->setRules($rules)->run(['id' => $id, 'param' => $param]) || !$this->valid_alfabet($param)) {
-            return $this->response->setJSON([
+            return json_response([
                 'status' => 0,
                 'message' => $this->validation->listErrors()
             ]);
@@ -132,7 +125,7 @@ class Home extends FrontController
             }
         }
 
-        return $this->response->setJSON([
+        return json_response([
             'data' => $data,
             'param' => $param
         ]);
@@ -150,7 +143,7 @@ class Home extends FrontController
         $res = json_decode($verify);
 
         if (!$res->success) {
-            return $this->response->setJSON([
+            return json_response([
                 'status' => 2,
                 'message' => 'Silahkan verifikasi captcha.'
             ]);
@@ -173,7 +166,7 @@ class Home extends FrontController
         ];
 
         if (!$this->validation->setRules($rules)->run($row)) {
-            return $this->response->setJSON([
+            return json_response([
                 'status' => 0,
                 'message' => $this->validation->listErrors()
             ]);
@@ -192,16 +185,16 @@ class Home extends FrontController
         $insert = $this->db->table('tb_message')->insert($data);
 
         if ($insert) {
-            return $this->response->setJSON([
+            return json_response([
                 'status' => 1,
                 'message' => 'Pesan berhasil terkirim.'
             ]);
         }
 
-        return $this->response->setJSON([
+        return json_response([
             'status' => 0,
             'message' => 'Gagal mengirim pesan.'
-        ]);
+        ], 400);
     }
 
     public function sanitize_input($str)
@@ -218,7 +211,7 @@ class Home extends FrontController
 
         $this->mainModel->update_data('tb_admin_web', $data, 'id', 1);
 
-        return $this->response->setJSON(1);
+        return json_response(1);
     }
 
 

@@ -1,19 +1,21 @@
-<?php defined('BASEPATH') OR exit('No direct script access allowed');
+<?php
 
-class Program extends CI_Controller {
+namespace App\Controllers\Page;
 
-    public function __construct() {
-        parent::__construct();
-    }
-    
+use App\Controllers\FrontController;
+
+class Program extends FrontController
+{
+
     public function index()
     {
+        $data = [
+            'page' => 'page/program'
+        ];
 
-        $data['title']       = '';
-        $data['description'] = '';
-        $data['keywords']    = '';
-        $data['page']        = 'page/program';
-        $this->load->view('index', $data);
+        $this->data = array_merge($this->data, $data);
+
+        return view('index', $this->data);
     }
 
 

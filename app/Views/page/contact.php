@@ -65,7 +65,7 @@
 </section>
 
 
-<?php $this->load->view('component/section/cta'); ?>
+<?php echo view('component/section/cta'); ?>
 
 
 <script type="text/javascript">

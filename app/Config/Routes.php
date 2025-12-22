@@ -21,14 +21,14 @@ $routes->post('form-lupa-password', 'auth\Lupa_password::form_lupa_password');
 
 
 // ================= Pages =================
-$routes->get('contact', 'page\Contact::index');
-$routes->get('program', 'page\Program::index');
-$routes->get('gallery', 'page\Gallery::index');
-$routes->get('faq', 'page\Faq::index');
-$routes->get('privacy-policy', 'page\Privacy_policy::index');
-$routes->get('webinar', 'page\Webinar::index');
-$routes->get('terms-of-service', 'page\Terms_of_service::index');
-$routes->get('impact-report', 'page\Impact_report::index');
+$routes->get('contact', 'Page\Contact::index');
+$routes->get('program', 'Page\Program::index');
+$routes->get('gallery', 'Page\Gallery::index');
+$routes->get('faq', 'Page\Faq::index');
+$routes->get('privacy-policy', 'Page\PrivacyPolicy::index');
+$routes->get('webinar', 'Page\Webinar::index');
+$routes->get('terms-of-service', 'Page\TermsOfService::index');
+$routes->get('impact-report', 'Page\ImpactReport::index');
 
 $routes->get('coming-soon', 'Home::coming_soon');
 $routes->get('preview', 'Home::preview');
@@ -80,7 +80,12 @@ $routes->get('fetch/fetch_data/fetch_data_schedule', 'Fetch\FetchData::fetch_dat
 $routes->get('fetch/fetch_data/fetch_data_artikel_alumni', 'Fetch\FetchData::fetch_data_artikel_alumni');
 $routes->get('fetch/fetch_data/fetch_data_voting', 'Fetch\FetchData::fetch_data_voting');
 $routes->get('fetch/fetch_data/fetch_data_partner', 'Fetch\FetchData::fetch_data_partner');
+$routes->get('fetch/fetch_data/fetch_data_faq', 'Fetch\FetchData::fetch_data_faq');
+
+$routes->get('page/terms_of_service/fetch_data', 'Page\TermsOfService::fetch_data');
+$routes->get('page/webinar/fetch_data_webinar', 'Page\Webinar::fetch_data_webinar');
 
 
 // Analytics
 $routes->post('analytic/post_visitors', 'Analytic::post_visitors');
+$routes->post('analytic/post_cta_btn', 'Analytic::post_cta_btn');

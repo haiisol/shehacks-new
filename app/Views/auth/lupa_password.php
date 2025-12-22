@@ -17,7 +17,7 @@ $ref = filter_var($ref, FILTER_VALIDATE_URL) ? $ref : base_url();
                     <div id="feedback-reset" class="mb-2"></div>
 
                     <form method="post" id="form-reset" class="form-style">
-                        <input type="hidden" name="uri_string" value="<?= html_escape($ref); ?>" class="form-control">
+                        <input type="hidden" name="uri_string" value="<?= esc($ref); ?>" class="form-control">
                         
                         <div class="form-group">
                             <label for="email" class="control-label">Email</label>

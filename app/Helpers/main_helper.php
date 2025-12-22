@@ -23,13 +23,13 @@ function app_url()
 function encrypt_url($string)
 {
     $output = false;
-    $security       = parse_ini_file("security.ini");
-    $secret_key     = $security["encryption_key"];
-    $secret_iv      = $security["iv"];
+    $security = parse_ini_file("security.ini");
+    $secret_key = $security["encryption_key"];
+    $secret_iv = $security["iv"];
     $encrypt_method = $security["encryption_mechanism"];
 
-    $key    = hash("sha256", $secret_key);
-    $iv     = substr(hash("sha256", $secret_iv), 0, 16); // iv – encrypt method AES-256-CBC expects 16 bytes – else you will get a warning
+    $key = hash("sha256", $secret_key);
+    $iv = substr(hash("sha256", $secret_iv), 0, 16); // iv – encrypt method AES-256-CBC expects 16 bytes – else you will get a warning
     $result = openssl_encrypt($string, $encrypt_method, $key, 0, $iv);
     $output = base64_encode($result);
 
@@ -39,13 +39,13 @@ function encrypt_url($string)
 function decrypt_url($string)
 {
     $output = false;
-    $security       = parse_ini_file("security.ini");
-    $secret_key     = $security["encryption_key"];
-    $secret_iv      = $security["iv"];
+    $security = parse_ini_file("security.ini");
+    $secret_key = $security["encryption_key"];
+    $secret_iv = $security["iv"];
     $encrypt_method = $security["encryption_mechanism"];
 
-    $key     = hash("sha256", $secret_key);
-    $iv     = substr(hash("sha256", $secret_iv), 0, 16); // iv – encrypt method AES-256-CBC expects 16 bytes – else you will get a warning
+    $key = hash("sha256", $secret_key);
+    $iv = substr(hash("sha256", $secret_iv), 0, 16); // iv – encrypt method AES-256-CBC expects 16 bytes – else you will get a warning
     $output = openssl_decrypt(base64_decode($string ?? ''), $encrypt_method, $key, 0, $iv);
 
     return $output;
@@ -57,10 +57,25 @@ function json_response($data = [], $status_code = 200)
     $data['csrf_name'] = $security->getTokenName();
     $data['csrf_hash'] = $security->getHash();
 
-    $response = Services::response();
-    return $response->setStatusCode($status_code)
+    return Services::response()
+        ->setStatusCode($status_code)
         ->setContentType('application/json')
-        ->setBody(json_encode($data));
+        ->setJSON($data);
+}
+
+function generateRandomString()
+{
+    $length = 4;
+    $characters = '0123456789';
+    $charactersLength = strlen($characters);
+
+    $result = '';
+
+    for ($i = 0; $i < $length; $i++) {
+        $result .= $characters[rand(0, $charactersLength - 1)];
+    }
+
+    return $result;
 }
 
 function period()
@@ -163,16 +178,16 @@ function key_auth()
 // --------------------------- time ago ---------------------------
 function time_ago($value, $full = false)
 {
-    $today      = time();
+    $today = time();
     $createdday = strtotime($value);
-    $datediff   = abs($today - $createdday);
-    $difftext   = '';
-    $years      = floor($datediff / (365 * 60 * 60 * 24));
-    $months     = floor(($datediff - $years * 365 * 60 * 60 * 24) / (30 * 60 * 60 * 24));
-    $days       = floor(($datediff - $years * 365 * 60 * 60 * 24 - $months * 30 * 60 * 60 * 24) / (60 * 60 * 24));
-    $hours      = floor($datediff / 3600);
-    $minutes    = floor($datediff / 60);
-    $seconds    = floor($datediff);
+    $datediff = abs($today - $createdday);
+    $difftext = '';
+    $years = floor($datediff / (365 * 60 * 60 * 24));
+    $months = floor(($datediff - $years * 365 * 60 * 60 * 24) / (30 * 60 * 60 * 24));
+    $days = floor(($datediff - $years * 365 * 60 * 60 * 24 - $months * 30 * 60 * 60 * 24) / (60 * 60 * 24));
+    $hours = floor($datediff / 3600);
+    $minutes = floor($datediff / 60);
+    $seconds = floor($datediff);
     //year checker
     if ($difftext == '') {
         if ($years > 1)
@@ -348,8 +363,8 @@ function date_ind($value, $param = false, $separator = false)
 
     $formatted = gmdate($value, time() + 60 * 60 * 8);
     $split = explode('-', $formatted);
-    $year  = $split[0];
-    $date  = $split[2];
+    $year = $split[0];
+    $date = $split[2];
 
     if ($separator) {
         $separator = $separator;
@@ -385,8 +400,8 @@ function datetime_ind($value, $param = false, $separator = false)
 
     $formatted = gmdate($val_date, time() + 60 * 60 * 8);
     $split = explode('-', $formatted);
-    $year  = $split[0];
-    $date  = $split[2];
+    $year = $split[0];
+    $date = $split[2];
 
     if ($separator) {
         $separator = $separator;
@@ -421,9 +436,9 @@ function datetime_ind($value, $param = false, $separator = false)
 
 function generateRandomColorHex()
 {
-    $red    = mt_rand(0, 255);
-    $green  = mt_rand(0, 255);
-    $blue   = mt_rand(0, 255);
+    $red = mt_rand(0, 255);
+    $green = mt_rand(0, 255);
+    $blue = mt_rand(0, 255);
 
     $colorHex = sprintf("#%02x%02x%02x", $red, $green, $blue);
 
