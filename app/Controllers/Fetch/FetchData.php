@@ -5,6 +5,7 @@ namespace App\Controllers\Fetch;
 use App\Controllers\BaseController;
 use App\Models\MainModel;
 use App\Models\FormatTimeModel;
+use Config\Database;
 
 class FetchData extends BaseController
 {
@@ -15,8 +16,8 @@ class FetchData extends BaseController
 
     public function __construct()
     {
-        $this->db = \Config\Database::connect();
-        $this->session = \Config\Services::session();
+        $this->db = Database::connect();
+        $this->session = session();
         $this->mainModel = new MainModel();
         $this->formatTimeModel = new FormatTimeModel();
     }

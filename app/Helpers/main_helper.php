@@ -2,6 +2,9 @@
 ini_set('date.timezone', 'Asia/Jakarta');
 
 use Config\Services;
+use Config\Database;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 function app_url()
 {
@@ -447,9 +450,19 @@ function generateRandomColorHex()
 
 function sanitize_input($str)
 {
+    if ($str === null) {
+        $str = '';
+    }
+
     $str = strip_tags($str); // Menghapus tag HTML/JS
-    $str = htmlspecialchars($str, ENT_QUOTES, 'UTF-8'); // Konversi simbol HTML agar tidak dieksekusi
-    return $str;
+    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8'); // Konversi simbol HTML agar tidak dieksekusi
+}
+
+function get_umur($tanggal)
+{
+    $birthDate = new \DateTime(date('Y-m-d', strtotime($tanggal)));
+    $today = new \DateTime("today");
+    return ($birthDate > $today) ? 0 : $today->diff($birthDate)->y;
 }
 
 function sanitize_input_textEditor($str)
@@ -472,4 +485,95 @@ function sanitize_input_textEditor($str)
     $sanitized = preg_replace("/\s*style\s*=\s*'[^']*'/i", '', $sanitized);
 
     return $sanitized;
+}
+
+function _clear_session()
+{
+    session()->remove([
+        'nama',
+        'telp',
+        'email',
+        'password',
+        'alamat',
+        'jenis_kelamin',
+        'tanggal_lahir',
+        'pendidikan',
+        'kategori_user',
+        'dapat_informasi',
+    ]);
+}
+
+function fa_handle($id_user, $uri_string = "")
+{
+    $db = Database::connect();
+    $generate_code = rand(100000, 999999);
+
+    $data2fa = [
+        'id_user' => $id_user,
+        'code' => $generate_code,
+        'access_policy' => 'FE',
+        'code_encrypt' => encrypt_url($generate_code),
+        'date_create' => date('Y-m-d H:i:s'),
+        'date_expired' => date('Y-m-d H:i:s', strtotime('+10 minutes'))
+    ];
+
+    $builder = $db->table('tb_user_2fa');
+
+    if (!$builder->insert($data2fa)) {
+        return false;
+    }
+
+    session()->set('2fa_id_user', encrypt_url($id_user));
+
+    if ($uri_string) {
+        session()->set('uri_string', $uri_string);
+    }
+
+    return [
+        'id_user' => $id_user,
+        'code' => $generate_code
+    ];
+}
+
+function send_email($data)
+{
+    $db = Database::connect();
+    $getKonf = $db->table('tb_admin_konf_email')
+        ->where('id', 1)
+        ->get()
+        ->getRowArray();
+
+    $mail = new PHPMailer(true);
+
+    $email = $data['email'];
+    $subject = $data['subject'];
+    $message = $data['message'];
+    $image = $data['image'] ?? '';
+    $cid = $data['cid'] ?? 'logo_email';
+
+    try {
+        $mail->isSMTP();
+        $mail->Host = $getKonf['host'];
+        $mail->SMTPAuth = (bool) $getKonf['smtpauth'];
+        $mail->Username = $getKonf['email'];
+        $mail->Password = $getKonf['password'];
+        $mail->SMTPSecure = $getKonf['smtpsecure'];
+        $mail->Port = $getKonf['port'];
+
+        $mail->setFrom($getKonf['email'], $getKonf['setfrom']);
+        $mail->addAddress($email);
+
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+
+        if ($image) {
+            $mail->AddEmbeddedImage($image, $cid);
+        }
+
+        $mail->MsgHTML(stripslashes($message));
+        $mail->send();
+
+    } catch (Exception $e) {
+        log_message('error', 'Email failed: ' . $mail->ErrorInfo);
+    }
 }

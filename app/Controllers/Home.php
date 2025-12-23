@@ -13,7 +13,6 @@ use Psr\Log\LoggerInterface;
 class Home extends FrontController
 {
     protected $db;
-    protected $validation;
     protected $mainModel;
     protected $userModel;
 
@@ -22,7 +21,6 @@ class Home extends FrontController
         parent::initController($request, $response, $logger);
         
         $this->db = Database::connect();
-        $this->validation = Services::validation();
 
         $this->mainModel = new MainModel();
         $this->userModel = new UserModel();
@@ -72,16 +70,19 @@ class Home extends FrontController
 
     public function valid_alfabet($str)
     {
+        $validation = service('validation');
+        
         if (preg_match('/^[a-zA-Z]+$/', $str)) {
             return TRUE;
         } else {
-            $this->validation->setError('valid_alfabet', 'Kolom {field} hanya boleh berisi huruf alfabet.');
+            $validation->setError('valid_alfabet', 'Kolom {field} hanya boleh berisi huruf alfabet.');
             return FALSE;
         }
     }
 
     function get_address()
     {
+        $validation = service('validation');
         $id = $this->request->getGet('id', TRUE);
         $param = $this->request->getGet('param', TRUE);
 
@@ -93,10 +94,10 @@ class Home extends FrontController
             ]
         ];
 
-        if (!$this->validation->setRules($rules)->run(['id' => $id, 'param' => $param]) || !$this->valid_alfabet($param)) {
+        if (!$validation->setRules($rules)->run(['id' => $id, 'param' => $param]) || !$this->valid_alfabet($param)) {
             return json_response([
                 'status' => 0,
-                'message' => $this->validation->listErrors()
+                'message' => $validation->listErrors()
             ]);
         }
 
@@ -133,6 +134,8 @@ class Home extends FrontController
 
     function post_contact()
     {
+        $validation = service('validation');
+        
         $secret = env('recaptcha.secret');
         $captchaToken = $this->request->getPost('g-recaptcha-response');
 
@@ -165,10 +168,10 @@ class Home extends FrontController
             'message' => 'required',
         ];
 
-        if (!$this->validation->setRules($rules)->run($row)) {
+        if (!$validation->setRules($rules)->run($row)) {
             return json_response([
                 'status' => 0,
-                'message' => $this->validation->listErrors()
+                'message' => $validation->listErrors()
             ]);
         }
 

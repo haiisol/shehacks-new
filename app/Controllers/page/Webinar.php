@@ -23,7 +23,7 @@ class Webinar extends FrontController
     {
         try {
 
-            $validation = Services::validation();
+            $validation = service('validation');
 
             $dataInput = [
                 'limit' => (int) $this->request->getGet('limit'),

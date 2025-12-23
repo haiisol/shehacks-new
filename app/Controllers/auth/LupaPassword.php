@@ -5,7 +5,6 @@ namespace App\Controllers\Auth;
 use App\Controllers\FrontController;
 use App\Models\MainModel;
 use Config\Database;
-use Config\Services;
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -21,7 +20,7 @@ class LupaPassword extends FrontController
     {
         $this->db = Database::connect();
         $this->mainModel = new MainModel();
-        $this->session = Services::session();
+        $this->session = session();
     }
 
     // --------------------------- reset password ---------------------------
@@ -242,77 +241,80 @@ class LupaPassword extends FrontController
         return redirect()->to('/');
     }
 
-    // TODO: Check this!
-    function post_ganti_password()
+    public function post_ganti_password()
     {
-        $email = $this->session->userdata('sess_email_reset', TRUE);
-        $token = $this->session->userdata('sess_token_reset', TRUE);
-        $ip = $this->input->ip_address();
+        $email = $this->session->get('sess_email_reset');
+        $token = $this->session->get('sess_token_reset');
+        $ip = $this->request->getIPAddress();
 
-        $attempts = $this->main_model->get_reset_password_attempts($ip, $email, 'submit_password');
+        $attempts = $this->mainModel->get_reset_password_attempts($ip, $email, 'submit_password');
+
         if ($attempts >= 5) {
-            $response['status'] = 0;
-            $response['message'] = 'Terlalu banyak permintaan. Coba lagi dalam 10 menit.';
-        } else {
-
-            if ($token) {
-                $password = $this->input->post('password', TRUE);
-
-                $get_user = $this->db->select('id_user, token')
-                    ->from('tb_user')
-                    ->where('email', $email)
-                    ->get()
-                    ->row_array();
-
-                if ($get_user) {
-
-                    if ($get_user['token'] == $token) {
-
-                        $update['password'] = md5($password);
-                        $update['password_text'] = $password;
-
-                        $query = $this->main_model->update_data('tb_user', $update, 'id_user', $get_user['id_user']);
-
-                        if ($query) {
-
-                            $this->session->unset_userdata('sess_email_reset');
-                            $this->session->unset_userdata('sess_token_reset');
-
-                            $this->main_model->clear_reset_password_attempts($ip, $email);
-
-                            $response['status'] = 1;
-                            $response['message'] = 'Sukses, reset password';
-                        } else {
-
-                            $this->main_model->record_reset_password_attempt($ip, $email, 'submit_password');
-
-                            $response['status'] = 0;
-                            $response['message'] = 'Gagal, silahkan coba lagi';
-                        }
-                    } else {
-
-                        $this->main_model->record_reset_password_attempt($ip, $email, 'submit_password');
-
-                        $response['status'] = 0;
-                        $response['message'] = 'Gagal, akses di block';
-                    }
-                } else {
-
-                    $this->main_model->record_reset_password_attempt($ip, $email, 'submit_password');
-
-                    $response['status'] = 0;
-                    $response['message'] = 'Gagal, email tidak terdaftar';
-                }
-            } else {
-
-                $response['status'] = 2;
-                $response['message'] = 'Gagal, sesi telah kadaluarsa';
-
-                $this->main_model->record_reset_password_attempt($ip, $email, 'submit_password');
-            }
+            return json_response([
+                'status' => 0,
+                'message' => 'Terlalu banyak permintaan. Coba lagi dalam 10 menit.',
+            ]);
         }
 
-        json_response($response);
+        if (!$token) {
+            $this->mainModel->record_reset_password_attempt($ip, $email, 'submit_password');
+
+            return json_response([
+                'status' => 2,
+                'message' => 'Gagal, sesi telah kadaluarsa',
+            ]);
+        }
+
+        $password = $this->request->getPost('password');
+
+        $get_user = $this->db->table('tb_user')
+            ->select('id_user, token')
+            ->where('email', $email)
+            ->get()
+            ->getRowArray();
+
+        if (!$get_user) {
+            $this->mainModel->record_reset_password_attempt($ip, $email, 'submit_password');
+
+            return json_response([
+                'status' => 0,
+                'message' => 'Gagal, email tidak terdaftar',
+            ]);
+        }
+
+        if ($get_user['token'] !== $token) {
+            $this->mainModel->record_reset_password_attempt($ip, $email, 'submit_password');
+
+            return json_response([
+                'status' => 0,
+                'message' => 'Gagal, akses di block',
+            ]);
+        }
+
+        $update = [
+            'password' => md5($password),
+            'password_text' => $password,
+        ];
+
+        $query = $this->mainModel->update_data('tb_user', $update, 'id_user', $get_user['id_user']);
+
+        if (!$query) {
+            $this->mainModel->record_reset_password_attempt($ip, $email, 'submit_password');
+
+            return json_response([
+                'status' => 0,
+                'message' => 'Gagal, silahkan coba lagi',
+            ]);
+        }
+
+        // sukses
+        $this->session->remove(['sess_email_reset', 'sess_token_reset']);
+        $this->mainModel->clear_reset_password_attempts($ip, $email);
+
+        return json_response([
+            'status' => 1,
+            'message' => 'Sukses, reset password',
+        ]);
     }
     // --------------------------- end form password ---------------------------
 

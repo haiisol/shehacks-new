@@ -1,159 +1,152 @@
-<?php defined('BASEPATH') OR exit('No direct script access allowed');
+<?php
+namespace App\Controllers\Auth;
 
-class Register_voting extends CI_Controller {
+use Config\Database;
+use Config\Services;
+use App\Models\MainModel;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use App\Controllers\FrontController;
 
-    function __construct() { 
-        parent::__construct();
-    } 
+class RegisterVoting extends FrontController
+{
+    protected $db;
+    protected $session;
+    protected $mainModel;
+
+    public function __construct()
+    {
+        $this->db = Database::connect();
+        $this->session = Services::session();
+        $this->mainModel = new MainModel();
+    }
 
     public function index()
-    {   
-        $web = $this->main_model->get_admin_web();
+    {
+        if (!$this->data['register_button']) {
+            return redirect()->to('/');
+        }
 
-        if ($web['register_button'] == 'true') {
-            
-            if($this->session->userdata('logged_in_front') == TRUE) {
-                redirect('dashboard');
-            } 
-            else {
-                $data['title']       = 'Register';
-                $data['description'] = '';
-                $data['keywords']    = '';
-                $data['page']        = 'auth/register_voting';
-                $this->load->view('index', $data);
-            }
-        } 
-        else {
-            redirect('');
-        }   
+        if ($this->session->get('logged_in_front')) {
+            return redirect()->to('dashboard');
+        }
+
+        $data = [
+            'title' => 'Register',
+            'page' => 'auth/register_voting'
+        ];
+
+        $this->data = array_merge($this->data, $data);
+
+        return view('index', $this->data);
     }
 
     function post_register_voting()
     {
-        $kode_user = strtoupper(substr(uniqid(), 7)).date('my');
-        $token     = md5(date('his').date('d').uniqid().date('my'));
-        $email     = sanitize_input($this->input->post('email'));
-        
-        $data['kode_user']          = $kode_user;
-        $data['channel']            = '2025';
-        $data['token']              = $token;
-        $data['status']             = 1;
-        $data['date_create']        = date_create('now', timezone_open('Asia/Jakarta'))->format('Y-m-d H:i:s');
-        $data['kategori_user']      = '';
-        $data['nama']               = sanitize_input($this->session->userdata('nama'));
-        $data['telp']               = sanitize_input($this->session->userdata('telp'));
-        $data['email']              = $email;
-        $data['password']           = md5($this->input->post('password'));
-        $data['password_text']      = $this->input->post('password');
+        $kode_user = strtoupper(substr(uniqid(), 7)) . date('my');
+        $token = md5(date('his') . date('d') . uniqid() . date('my'));
+        $email = sanitize_input($this->request->getPost('email'));
 
-        $this->db->select('id_user');
-        $this->db->where('email', $email);
-        $cek_user = $this->db->get('tb_user')->row_array();
+        $data = [
+            'kode_user' => $kode_user,
+            'channel' => '2025',
+            'token' => $token,
+            'status' => 1,
+            'date_create' => date_create('now', timezone_open('Asia/Jakarta'))
+                ->format('Y-m-d H:i:s'),
+            'kategori_user' => '',
+            'nama' => sanitize_input($this->session->get('nama')),
+            'telp' => sanitize_input($this->session->get('telp')),
+            'email' => $email,
+            'password' => md5($this->request->getPost('password')), // legacy
+            'password_text' => $this->request->getPost('password'),
+        ];
 
-        if (empty($cek_user)) {
+        $cek_user = $this->db->table('tb_user')
+            ->select('id_user')
+            ->where('email', $email)
+            ->get()
+            ->getRowArray();
 
-            $query      = $this->db->insert('tb_user', $data);
-            $id_user    = $this->db->insert_id();
-
-            if ($query) {
-
-                // clear session
-                $this->_clear_session();
-
-                // 1FA Handle
-                $this->fa_handle($id_user);
-
-                $response['status']   = 1;
-                $response['message']  = 'Sukses';
-            }
-            else {  
-                $response['status']  = 0;
-                $response['message'] = 'Registrasi gagal, Silahkan coba lagi.';
-            }
-        }
-        else {  
-            $response['status']  = 0;
-            $response['message'] = 'Gagal, email sudah terdaftar.';
+        if ($cek_user) {
+            return json_response([
+                'status' => 0,
+                'message' => 'Gagal, email sudah terdaftar.',
+            ]);
         }
 
-        json_response($response);
-    }
+        $query = $this->db->table('tb_user')->insert($data);
+        $id_user = $this->db->insertID();
 
-    function _clear_session()
-    {
-        $this->session->unset_userdata('nama');
-        $this->session->unset_userdata('telp');
-        $this->session->unset_userdata('email');
-        $this->session->unset_userdata('password');
-        $this->session->unset_userdata('alamat');
-        $this->session->unset_userdata('jenis_kelamin');
-        $this->session->unset_userdata('tanggal_lahir');
-        $this->session->unset_userdata('pendidikan');
-        $this->session->unset_userdata('kategori_user');
-        $this->session->unset_userdata('dapat_informasi');
-    }
-
-    public function sanitize_input($str)
-    {
-        if ($str === null) {
-            $str = '';
+        if (!$query) {
+            return json_response([
+                'status' => 0,
+                'message' => 'Registrasi gagal, Silahkan coba lagi.',
+            ]);
         }
-        $str = strip_tags($str);
-        $str = htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
-        return $str;
+
+        // clear session
+        _clear_session();
+
+        // 2FA handle
+        $fa_data = fa_handle($id_user);
+
+        if ($fa_data !== false) {
+            $this->send_email($fa_data);
+        }
+
+        return json_response([
+            'status' => 1,
+            'message' => 'Sukses',
+        ]);
     }
 
-    function fa_handle($id_user) 
+    function send_email($data)
     {
-        $generate_code = rand(100000, 999999);
 
-        $dataInsert2fa['id_user']      = $id_user;
-        $dataInsert2fa['code']         = $generate_code;
-        $dataInsert2fa['access_policy']= 'FE';
-        $dataInsert2fa['code_encrypt'] = encrypt_url($generate_code);
-        $dataInsert2fa['date_create']  = date_create('now', timezone_open('Asia/Jakarta'))->format('Y-m-d H:i:s');
-        $dataInsert2fa['date_expired'] = date_create('now', timezone_open('Asia/Jakarta'))->modify('+10 minutes')->format('Y-m-d H:i:s');
-        $this->db->insert('tb_user_2fa', $dataInsert2fa);
+        $get_user = $this->db->table('tb_user')
+            ->select('email')
+            ->where('id_user', $data['id_user'])
+            ->get()
+            ->getRowArray();
 
-        $data_email['id_user']         = $id_user;
-        $data_email['code']            = $generate_code;
+        if (!$get_user) {
+            return;
+        }
 
-        $this->send_email($data_email);
+        $data_email = [
+            'code' => $data['code'],
+            'email' => $get_user['email'],
+            'param' => 'Mendaftar',
+        ];
 
-        $this->session->set_userdata('2fa_id_user', encrypt_url($id_user));
-    }
+        $message = view('email/2fa_email_login', $data_email);
 
-    function send_email($data) 
-    {
-        require_once(APPPATH.'third_party/phpmailer/PHPMailerAutoload.php');
+        $get_konf = $this->db->table('tb_admin_konf_email')
+            ->where('id', 1)
+            ->get()
+            ->getRowArray();
 
-        $this->db->select('email');
-        $this->db->where('id_user', $data['id_user'], TRUE);
-        $get_user = $this->db->get('tb_user')->row_array();
-       
-        $data_email['code']          = $data['code'];
-        $data_email['email']         = $get_user['email'];
-        $data_email['param']         = 'Mendaftar';
+        $mail = new PHPMailer(true);
 
-        $message  = $this->load->view('email/2fa_email_login', $data_email, TRUE);
-        $get_konf = $this->db->query("SELECT * FROM tb_admin_konf_email WHERE id = 1 ")->row_array();
+        try {
+            $mail->isSMTP();
+            $mail->Host = $get_konf['host'];
+            $mail->SMTPAuth = $get_konf['smtpauth'];
+            $mail->Username = $get_konf['email'];
+            $mail->Password = $get_konf['password'];
+            $mail->SMTPSecure = $get_konf['smtpsecure'];
+            $mail->Port = $get_konf['port'];
+            $mail->Subject = $data['code'] . ' - Kode akses login akun SheHacks';
+            $mail->setFrom($get_konf['email'], $get_konf['setfrom']);
+            $mail->addAddress($data_email['email']);
+            $mail->isHTML(true);
+            $mail->MsgHTML(stripslashes($message));
+            $mail->send();
+        } catch (Exception $e) {
+            log_message('error', 'Email failed: ' . $mail->ErrorInfo);
+        }
 
-        $mail = new PHPMailer;
-        $mail->isSMTP();
-        $mail->Host       = $get_konf['host'];
-        $mail->SMTPAuth   = $get_konf['smtpauth'];
-        $mail->Username   = $get_konf['email'];
-        $mail->Password   = $get_konf['password'];
-        $mail->SMTPSecure = $get_konf['smtpsecure'];
-        $mail->Port       = $get_konf['port'];
-        $mail->Subject    = $data['code']." - Kode akses login akun SheHacks";
-        $mail->setFrom($get_konf['email'], $get_konf['setfrom']);
-        $mail->addAddress($data_email['email']);
-        $mail->isHTML(true);
-        //$mail->AddEmbeddedImage(FCPATH.'assets/front/img/Image-registrasi-2024.png', 'logo_email');
-        $mail->MsgHTML(stripslashes($message));
-        $mail->send();
-        
     }
 
     // function send_API_IDE($id_user, $email, $password, $fullname) {
@@ -308,7 +301,7 @@ class Register_voting extends CI_Controller {
 
 
     //     if ($query_verf) {
-            
+
     //         if ($get_user['kategori_user'] == 'MVP') {
     //             $data_email['text_kategori']          = 'Jangan lupa untuk lengkapi profile kamu di <a href="https://shehacks.id/" target="_blank">website SheHacks 2023</a>, dan sertakan deck dari MVP produk kamu.';
     //         } else {
@@ -316,7 +309,7 @@ class Register_voting extends CI_Controller {
     //         }
 
     //         $data_email['url_verifikasi']= base_url().'register/verifikasi?token_user='.$data_verif['token_user'].'&token_verf='.$data_verif['token_verifikasi'];
-            
+
     //         $data_email['nama']          = $get_user['nama'];
     //         $data_email['email']         = $get_user['email'];
     //         $data_email['telp']          = $get_user['telp'];
@@ -342,5 +335,5 @@ class Register_voting extends CI_Controller {
 
     //     } 
     // }
-    
+
 }

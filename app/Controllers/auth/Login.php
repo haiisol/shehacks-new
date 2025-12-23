@@ -3,7 +3,6 @@
 namespace App\Controllers\Auth;
 
 use App\Controllers\FrontController;
-use Config\Services;
 use Config\Database;
 use App\Models\MainModel;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -18,7 +17,7 @@ class Login extends FrontController
     protected $mainModel;
     function __construct()
     {
-        $this->session = Services::session();
+        $this->session = session();
         $this->db = Database::connect();
         $this->mainModel = new MainModel();
     }
@@ -109,7 +108,30 @@ class Login extends FrontController
                     ]);
                 }
 
-                $this->fa_handle($user, $uri_string);
+                $fa_data = fa_handle($user['id_user'], $uri_string);
+
+                if ($fa_data !== false) {
+                                        
+                    $dataEmail = [
+                        'code' => $fa_data['code'],
+                        'email' => $email,
+                        'param' => 'Login'
+                    ];
+
+                    $message = view('email/2fa_email_login', $dataEmail);
+                    $subject = $fa_data['code'] . " - Kode akses login akun SheHacks";
+                    
+                    
+                    $emailData = [
+                        'subject' => $subject,
+                        'message' => $message,
+                        'email' => $email
+                    ];
+
+                    send_email($emailData);
+
+                }
+
                 $this->mainModel->record_login_attempt($ip, $email, 'success');
                 $this->mainModel->clear_login_attempts($ip, $email, 'failed');
 
@@ -140,44 +162,18 @@ class Login extends FrontController
         }
     }
 
-    function fa_handle($data, $uri_string)
-    {
-        $code = rand(100000, 999999);
-
-        $insert = [
-            'id_user' => $data['id_user'],
-            'code' => $code,
-            'access_policy' => 'FE',
-            'code_encrypt' => encrypt_url($code),
-            'date_create' => date('Y-m-d H:i:s'),
-            'date_expired' => date('Y-m-d H:i:s', strtotime('+10 minutes'))
-        ];
-
-        $this->db->table('tb_user_2fa')->insert($insert);
-
-        $email = [
-            'id_user' => $data['id_user'],
-            'code' => $code
-        ];
-
-        $this->send_email($email);
-
-        $this->session->set('2fa_id_user', encrypt_url($data['id_user']));
-        $this->session->set('uri_string', $uri_string);
-    }
-
     function post_login_verify()
     {
-        $validation = Services::validation();
+        $validation = service('validation');
 
         $ip = $this->request->getIPAddress();
         $kode = $this->request->getPost('kode');
 
-        $validation->setRules([
+        $rules = [
             'kode' => 'required|numeric'
-        ]);
+        ];
 
-        if (!$validation->withRequest($this->request)->run()) {
+        if (!$validation->setRules($rules)->run(['kode' => $kode])) {
             return json_response([
                 'status' => 0,
                 'message' => $validation->getErrors()
@@ -262,56 +258,6 @@ class Login extends FrontController
             'message' => 'Success',
             'redirect' => $redirect
         ]);
-    }
-
-    function send_email($data)
-    {
-        $getUser = $this->db->table('tb_user')
-            ->select('email')
-            ->where('id_user', $data['id_user'])
-            ->get()
-            ->getRowArray();
-
-
-        $dataEmail = [
-            'code' => $data['code'],
-            'email' => $getUser['email'],
-            'param' => 'Login'
-        ];
-
-        $message = view('email/2fa_email_login', $dataEmail);
-
-        // get smtp config
-        $getKonf = $this->db->table('tb_admin_konf_email')
-            ->where('id', 1)
-            ->get()
-            ->getRowArray();
-
-        $mail = new PHPMailer(true);
-
-        try {
-            $mail->isSMTP();
-            $mail->Host = $getKonf['host'];
-            $mail->SMTPAuth = (bool) $getKonf['smtpauth'];
-            $mail->Username = $getKonf['email'];
-            $mail->Password = $getKonf['password'];
-            $mail->SMTPSecure = $getKonf['smtpsecure'];
-            $mail->Port = $getKonf['port'];
-
-            $mail->setFrom($getKonf['email'], $getKonf['setfrom']);
-            $mail->addAddress($getUser['email']);
-
-            $mail->isHTML(true);
-            $mail->Subject = $data['code'] . " - Kode akses login akun SheHacks";
-            // $mail->AddEmbeddedImage(FCPATH.'assets/front/img/Image-registrasi-2024.png', 'logo_email');
-
-            $mail->MsgHTML(stripslashes($message));
-
-            $mail->send();
-
-        } catch (Exception $e) {
-            log_message('error', 'Email failed: ' . $mail->ErrorInfo);
-        }
     }
 
     function send_email_text($data)

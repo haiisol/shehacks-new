@@ -16,8 +16,7 @@ class MainModel extends Model
     {
         parent::__construct();
         $this->db = Database::connect();
-        $this->session = Services::session();
-        $this->request = Services::request();
+        $this->session = session();
     }
 
     function logged_in_front()
@@ -460,13 +459,6 @@ class MainModel extends Model
             log_message('error', $e->getMessage());
             return false;
         }
-    }
-
-    function get_umur($tanggal)
-    {
-        $birthDate = new \DateTime(date('Y-m-d', strtotime($tanggal)));
-        $today = new \DateTime("today");
-        return ($birthDate > $today) ? 0 : $today->diff($birthDate)->y;
     }
 
     // Login Attempts

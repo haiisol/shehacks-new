@@ -37,9 +37,9 @@ $routes->get('preview-voting', 'Home::preview_voting');
 
 // ================= Artikel =================
 $routes->get('artikel', 'artikel\Artikel::index');
-$routes->get('artikel/(:any)/(:any)', 'artikel\Artikel::detail/$1/$2');
+$routes->get('artikel/(:any)/(:any)', 'Artikel\Artikel::detail/$1/$2');
 
-$routes->get('artikel_data/(:any)', 'artikel\Artikel_data::index/$1');
+$routes->get('artikel_data/(:any)', 'Artikel\ArtikelData::$1');
 
 $routes->get('artikel-tags/(:any)/(:any)', 'artikel\Artikel::tags/$1/$2');
 $routes->get('artikel-kategori/(:any)/(:any)', 'artikel\Artikel::tags/$1/$2');
@@ -89,3 +89,4 @@ $routes->get('page/webinar/fetch_data_webinar', 'Page\Webinar::fetch_data_webina
 // Analytics
 $routes->post('analytic/post_visitors', 'Analytic::post_visitors');
 $routes->post('analytic/post_cta_btn', 'Analytic::post_cta_btn');
+$routes->post('analytic/post_blog_viewer', 'Analytic::post_blog_viewer');

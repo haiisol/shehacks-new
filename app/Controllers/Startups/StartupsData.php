@@ -20,7 +20,7 @@ class StartupsData extends BaseController
 
     private function _sql($param)
     {
-        $validation = Services::validation();
+        $validation = service('validation');
 
         $rules = [
             'limit'  => 'required|numeric',

@@ -130,19 +130,16 @@ class Analytic extends BaseController
 
     public function post_blog_viewer()
     {
-        // 1. Decrypt and Validate
         $id_blog = decrypt_url($this->request->getPost('id_enc'));
 
         if (empty($id_blog)) {
             return json_response(['status' => 0, 'message' => 'Invalid ID', 'csrf_hash' => csrf_hash()]);
         }
 
-        // 2. Prepare Data
         $agent = $this->request->getUserAgent();
         $referrer = $agent->isReferral() ? $agent->getReferrer() : base_url();
         $date = date('Y-m-d');
 
-        // 3. Query Builder (Replaces Raw SQL)
         $builder = $this->db->table('tb_analytic_blog');
         $viewer  = $builder->where('id_blog', $id_blog)
             ->where('DATE(date_create)', $date)
@@ -151,7 +148,6 @@ class Analytic extends BaseController
             ->getRowArray();
 
         if ($viewer) {
-            // CI4 optimized way to increment a column
             $builder->where('id_analytic_blog', $viewer['id_analytic_blog'])
                 ->increment('hits', 1);
         } else {

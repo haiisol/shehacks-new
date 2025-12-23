@@ -58,7 +58,7 @@ class FrontController extends BaseController
         $this->data['description']    = $web['meta_description'];
         $this->data['keywords']       = $web['meta_keywords'];
         $this->data['event_running']  = filter_var($web['event_running'], FILTER_VALIDATE_BOOLEAN);
-        $this->data['register_button'] = $web['register_button'];
+        $this->data['register_button'] = filter_var($web['register_button'], FILTER_VALIDATE_BOOLEAN);
         $this->data['voting_running'] = filter_var($web['voting_running'], FILTER_VALIDATE_BOOLEAN);
         $this->data['under_construction'] = filter_var($web['under_construction'], FILTER_VALIDATE_BOOLEAN);
         $this->data['instagram'] = $web['instagram'] || '';

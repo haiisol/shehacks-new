@@ -27,7 +27,6 @@
                             <label for="kategori" class="control-label">Kategori</label>
                             <select name="kategori" id="kategori" data-placeholder="Pilih kategori" data-allow-clear="false" class="form-control select-custome-search">
                                 <option value="" readonly selected hidden>Pilih industri</option>
-                                <?php $get_kategori = $this->db->query("SELECT * FROM tb_blog_kategori WHERE status_delete = 0 ORDER BY nama ASC")->result_array(); ?>
                                 <?php foreach ($get_kategori as $key_kategori) { ?>
                                     <option value="<?php echo $key_kategori['id_blog_kategori']; ?>"><?php echo $key_kategori['nama']; ?></option>
                                 <?php }; ?>
