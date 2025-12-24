@@ -353,46 +353,30 @@ class Register extends FrontController
         $fa_data = fa_handle($id_user);
 
         if ($fa_data !== false) {
-            $this->send_email($fa_data);
+            $email = $data['email'];
+
+            $dataEmail = [
+                'code' => $fa_data['code'],
+                'email' => $email,
+                'param' => 'Mendaftar'
+            ];
+
+            $message = view('email/2fa_email_login', $dataEmail);
+            $subject = $fa_data['code'] . " - Kode akses login akun SheHacks";
+
+            $emailData = [
+                'subject' => $subject,
+                'message' => $message,
+                'email' => $email
+            ];
+
+            send_email($emailData);
         }
 
         return json_response([
             'status' => 1,
             'message' => 'Sukses',
         ]);
-    }
-
-    function send_email($data)
-    {
-        require_once(APPPATH . 'third_party/phpmailer/PHPMailerAutoload.php');
-
-        $this->db->select('email');
-        $this->db->where('id_user', $data['id_user'], TRUE);
-        $get_user = $this->db->get('tb_user')->row_array();
-
-        $data_email['code'] = $data['code'];
-        $data_email['email'] = $get_user['email'];
-        $data_email['param'] = 'Mendaftar';
-
-        $message = $this->load->view('email/2fa_email_login', $data_email, TRUE);
-        $get_konf = $this->db->query("SELECT * FROM tb_admin_konf_email WHERE id = 1 ")->row_array();
-
-        $mail = new PHPMailer;
-        $mail->isSMTP();
-        $mail->Host = $get_konf['host'];
-        $mail->SMTPAuth = $get_konf['smtpauth'];
-        $mail->Username = $get_konf['email'];
-        $mail->Password = $get_konf['password'];
-        $mail->SMTPSecure = $get_konf['smtpsecure'];
-        $mail->Port = $get_konf['port'];
-        $mail->Subject = $data['code'] . " - Kode akses login akun SheHacks";
-        $mail->setFrom($get_konf['email'], $get_konf['setfrom']);
-        $mail->addAddress($data_email['email']);
-        $mail->isHTML(true);
-        //$mail->AddEmbeddedImage(FCPATH.'assets/front/img/Image-registrasi-2024.png', 'logo_email');
-        $mail->MsgHTML(stripslashes($message));
-        $mail->send();
-
     }
 
     private function upload_file_pdf($name, $filename)
@@ -427,56 +411,5 @@ class Register extends FrontController
         } else {
             return '';
         }
-    }
-
-    function send_email_text($id_user)
-    {
-
-        $get_konf = $this->db->query("SELECT * FROM tb_admin_konf_email WHERE id = 1 ")->row_array();
-
-        $get_user = $this->db->query("
-            SELECT nama, email, telp, token
-            FROM tb_user 
-            WHERE id_user = " . $id_user . " 
-            ")->row_array();
-
-        $data_verif['id_user'] = $id_user;
-        $data_verif['token_user'] = md5(date('his') . date('d') . uniqid() . date('my'));
-        $data_verif['token_verifikasi'] = $get_user['token'];
-        $data_verif['status_verifikasi'] = 'false';
-
-        $query_verf = $this->db->insert('tb_user_verifikasi_email', $data_verif);
-
-        if ($query_verf) {
-
-            $url_verifikasi = base_url() . 'register/verifikasi?token_user=' . $data_verif['token_user'] . '&token_verf=' . $data_verif['token_verifikasi'];
-
-            // ini_set( 'display_errors', 1 );
-            // error_reporting( E_ALL );
-
-            $from = $get_konf['email'];
-            $to = $get_user['email'];
-            $subject = "Verifikasi email Anda untuk SHEHACKS";
-
-            $message = "
-
-            Halo,
-
-            Klik link ini untuk memverifikasi alamat email Anda.
-
-            " . $url_verifikasi . "
-
-            Jika Anda tidak meminta verifikasi alamat ini, Anda dapat mengabaikan email ini.
-
-            Terima Kasih,
-
-            Tim SheHacks Anda";
-
-            $headers = "From:" . $from;
-
-            mail($to, $subject, $message, $headers);
-
-        }
-
     }
 }

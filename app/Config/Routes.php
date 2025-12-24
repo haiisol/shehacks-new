@@ -69,9 +69,17 @@ $routes->get('logout-admin', 'admin\auth\Login::logout');
 $routes->get('admin/blogs/(:any)/(:any)', 'admin\blog\Blog::tulis/$1/$2');
 
 // Modul
-$routes->get('category/(:any)/(:any)', 'modul\Modul::detail_modul/$1/$2');
-$routes->get('learn/(:any)/(:any)', 'modul\Modul_master::pelajari/$1/$2');
-$routes->get('sertifikat/(:any)/(:any)', 'modul\Modul_master::show_sertifikat/$1/$2');
+$routes->group('', ['filter' => 'frontauth'], function ($routes) {
+    $routes->get('category/(:any)/(:any)', 'Modul\Modul::detail_modul/$1/$2');
+    $routes->get('learn/(:any)/(:any)', 'Modul\ModulMaster::pelajari/$1/$2');
+    $routes->get('sertifikat/(:any)/(:any)', 'Modul\ModulMaster::show_sertifikat/$1/$2');
+    $routes->post('modul/modul_master/fetch_data_video', 'Modul\ModulMaster::fetch_data_video');
+    $routes->post('modul/modul_master/fetch_data_quiz', 'Modul\ModulMaster::fetch_data_quiz');
+    $routes->post('modul/modul_master/cek_trigger_menu', 'Modul\ModulMaster::cek_trigger_menu');
+    $routes->post('modul/modul_master/check_learn_progress', 'Modul\ModulMaster::check_learn_progress');
+    $routes->post('modul/modul_master/cek_data_modul', 'Modul\ModulMaster::cek_data_modul');
+    $routes->post('modul/modul_master/submit_quiz', 'Modul\ModulMaster::submit_quiz');
+});
 
 // AJAX
 $routes->get('fetch/fetch_data/fetch_data_intro', 'Fetch\FetchData::fetch_data_intro');

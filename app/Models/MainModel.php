@@ -19,44 +19,12 @@ class MainModel extends Model
         $this->session = session();
     }
 
-    function logged_in_front()
-    {
-        if ($this->session->get('logged_in_front') == FALSE) {
-            redirect('', 'refresh');
-        } else {
-
-            $id_user = key_auth();
-            $key_token = $this->session->get('key_token');
-
-            $builder = $this->db->table('tb_user_2fa');
-            $cek_logout_status = $builder->select('logout_status')
-                ->where('access_policy', 'FE')
-                ->where('id_user', $id_user)
-                ->where('code_encrypt', $key_token)
-                ->get()->getRowArray();
-
-            if ($cek_logout_status) {
-                if ($cek_logout_status['logout_status'] == 'true') {
-                    redirect('', 'refresh');
-                }
-            } else {
-                redirect('', 'refresh');
-            }
-        }
-    }
-
     function logged_in_admin()
     {
         if ($this->session->get('logged_in_admin') == FALSE) {
             $this->session->setFlashdata('flash-warning-message', 'Silahkan login terlebih dahulu.');
             redirect('panel', 'refresh');
         }
-    }
-
-    function unset_log_redirect()
-    {
-
-        $this->session->remove("log_redirect");
     }
 
     function get_admin()
@@ -234,35 +202,6 @@ class MainModel extends Model
             ->get()->getRowArray();
     }
 
-    // --------------------------- post visitors ---------------------------
-    function post_visitors_2023($page)
-    {
-        $agent = $this->request->getUserAgent();
-        $date = date('Y-m-d');
-        $ip = $this->request->getIPAddress();
-
-        $visitor = $this->db->table('tb_analytic_visitors_2025')->where(['date' => $date, 'page_view' => $page, 'ip_address' => $ip])->get()->getRowArray();
-
-        if ($visitor) {
-            $this->db->table('tb_analytic_visitors_2025')->where('id', $visitor['id'])->increment('hits');
-        } else {
-            $referrer = ($agent->isReferral()) ? $agent->getReferrer() : base_url();
-            $this->db->table('tb_analytic_visitors_2025')->insert([
-                'referral' => $referrer,
-                'ip_address' => $ip,
-                'page_view' => $page,
-                'date' => $date,
-                'hits' => 1,
-                'browser' => $agent->getBrowser(),
-                'platform' => $agent->getPlatform(),
-                'waktu' => date('Y-m-d H:i:s')
-            ]);
-
-        }
-    }
-    // --------------------------- end post visitors ---------------------------
-
-
     // --------------------------- datatables ---------------------------
     function count_all($table, $where)
     {
@@ -384,17 +323,6 @@ class MainModel extends Model
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         return ($httpCode == 200);
-    }
-
-    function url_image_admin($nama_file)
-    {
-        $url_api = config('Common')->url_api_file ?? '';
-
-        if ($nama_file) {
-            return $url_api . 'image-admin/' . $nama_file;
-        }
-
-        return default_image();
     }
 
     function url_banner_popup()

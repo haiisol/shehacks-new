@@ -76,7 +76,25 @@ class LupaPassword extends FrontController
             $query = $this->db->table('tb_user_reset_password')->insert($insertData);
 
             if ($query) {
-                $this->send_email(['email' => $email, 'kode' => $kode]);
+
+                $dataEmail = [
+                    'kode_otp' => $kode,
+                    'email' => $email
+                ];
+
+                $subject = "${kode} - Reset Password akun SheHacks";
+                $message = view('email/lupa_password_email', $dataEmail);
+
+                $emailData = [
+                    'subject' => $subject,
+                    'message' => $message,
+                    'email' => $email,
+                    'image' => FCPATH . 'assets/front/img/logo-shehacks.png',
+                    'cid' => 'logo_email'
+                ];
+
+                send_email($emailData);
+
                 $this->mainModel->record_reset_password_attempt($ip, $email, 'submit_form');
 
                 return json_response([
@@ -90,74 +108,6 @@ class LupaPassword extends FrontController
             'status' => 0,
             'message' => 'Gagal, Email pengguna tidak terdaftar.'
         ]);
-    }
-
-    function send_email($data)
-    {
-        $data_email['email'] = $data['email'];
-        $data_email['kode_otp'] = $data['kode'];
-
-        $message = view('email/lupa_password_email', $data_email);
-        $get_konf = $this->db->table('tb_admin_konf_email')->getWhere(['id' => 1])->getRowArray();
-
-        $mail = new PHPMailer(true);
-
-        try {
-            $mail->isSMTP();
-            $mail->Host = $get_konf['host'];
-            $mail->SMTPAuth = $get_konf['smtpauth'];
-            $mail->Username = $get_konf['email'];
-            $mail->Password = $get_konf['password'];
-            $mail->SMTPSecure = $get_konf['smtpsecure'];
-            $mail->Port = $get_konf['port'];
-            $mail->Subject = $data_email['kode_otp'] . ' - Reset Password akun SheHacks';
-            $mail->setFrom($get_konf['email'], $get_konf['setfrom']);
-            $mail->addAddress($data_email['email']);
-            $mail->isHTML(true);
-
-            $mail->AddEmbeddedImage(FCPATH . 'assets/front/img/logo-shehacks.png', 'logo_email');
-
-            $mail->MsgHTML(stripslashes($message));
-
-            $mail->send();
-
-        } catch (Exception $e) {
-            log_message('error', 'Email failed: ' . $mail->ErrorInfo);
-        }
-    }
-
-    function send_email_text($data)
-    {
-
-        $data_email['email'] = $data['email'];
-        $data_email['kode_otp'] = $data['kode'];
-
-        $get_konf = $this->db->table('tb_admin_konf_email')->getWhere(['id' => 1])->getRowArray();
-
-
-        $from = $get_konf['email'];
-        $to = $get_user['email'];
-
-        $subject = $data_email['kode_otp'] . " - Reset password akun SheHacks";
-
-        $message = "
-
-        Halo,
-
-        Reset password akun SheHacks.
-
-        Berikut kode verifikasi akun Anda, silahkan gunakan kode dibawah untuk reset password pada akun Anda
-
-        Kode Verifikasi: " . $data_email['kode_otp'] . "
-
-        Terima Kasih,
-
-        Tim SheHacks Anda";
-
-        $headers = "From:" . $from;
-
-        mail($to, $subject, $message, $headers);
-
     }
     // --------------------------- reset password ---------------------------
 

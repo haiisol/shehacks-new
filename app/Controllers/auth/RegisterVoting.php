@@ -92,61 +92,28 @@ class RegisterVoting extends FrontController
         $fa_data = fa_handle($id_user);
 
         if ($fa_data !== false) {
-            $this->send_email($fa_data);
+            $dataEmail = [
+                'code' => $fa_data['code'],
+                'email' => $email,
+                'param' => 'Mendaftar'
+            ];
+
+            $message = view('email/2fa_email_login', $dataEmail);
+            $subject = $fa_data['code'] . " - Kode akses login akun SheHacks";
+
+            $emailData = [
+                'subject' => $subject,
+                'message' => $message,
+                'email' => $email
+            ];
+
+            send_email($emailData);
         }
 
         return json_response([
             'status' => 1,
             'message' => 'Sukses',
         ]);
-    }
-
-    function send_email($data)
-    {
-
-        $get_user = $this->db->table('tb_user')
-            ->select('email')
-            ->where('id_user', $data['id_user'])
-            ->get()
-            ->getRowArray();
-
-        if (!$get_user) {
-            return;
-        }
-
-        $data_email = [
-            'code' => $data['code'],
-            'email' => $get_user['email'],
-            'param' => 'Mendaftar',
-        ];
-
-        $message = view('email/2fa_email_login', $data_email);
-
-        $get_konf = $this->db->table('tb_admin_konf_email')
-            ->where('id', 1)
-            ->get()
-            ->getRowArray();
-
-        $mail = new PHPMailer(true);
-
-        try {
-            $mail->isSMTP();
-            $mail->Host = $get_konf['host'];
-            $mail->SMTPAuth = $get_konf['smtpauth'];
-            $mail->Username = $get_konf['email'];
-            $mail->Password = $get_konf['password'];
-            $mail->SMTPSecure = $get_konf['smtpsecure'];
-            $mail->Port = $get_konf['port'];
-            $mail->Subject = $data['code'] . ' - Kode akses login akun SheHacks';
-            $mail->setFrom($get_konf['email'], $get_konf['setfrom']);
-            $mail->addAddress($data_email['email']);
-            $mail->isHTML(true);
-            $mail->MsgHTML(stripslashes($message));
-            $mail->send();
-        } catch (Exception $e) {
-            log_message('error', 'Email failed: ' . $mail->ErrorInfo);
-        }
-
     }
 
     // function send_API_IDE($id_user, $email, $password, $fullname) {

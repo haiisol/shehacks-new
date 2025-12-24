@@ -260,40 +260,6 @@ class Login extends FrontController
         ]);
     }
 
-    function send_email_text($data)
-    {
-        $email = $data['user']['email'];
-        $kode = $data['code'];
-
-        $getKonf = $this->db->table('tb_admin_konf_email')
-            ->select('email')
-            ->where('id', 1)
-            ->get()
-            ->getRowArray();
-
-        $from = $getKonf['email'];
-        $to = $email;
-
-        $subject = $kode . " - Kode akses login akun SheHacks";
-
-        $message = "
-            Halo,
-
-            Anda dapat menyalin dan menggunakan kode dibawah ini untuk akses login akun Shehacks :
-
-            {$kode}
-
-            Kode ini akan kedaluwarsa setelah 10 menit atau jika Anda login ulang.
-
-            Terima Kasih,
-
-            Tim SheHacks";
-
-        $headers = "From:" . $from;
-
-        mail($to, $subject, $message, $headers);
-    }
-
     function logout()
     {
         $idUser = key_auth();

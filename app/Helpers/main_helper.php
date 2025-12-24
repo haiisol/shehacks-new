@@ -104,6 +104,17 @@ function url_image($nama_file, $folder_image)
     return default_image();
 }
 
+function url_image_admin($nama_file)
+{
+    $url_api = config('Common')->url_api_file ?? '';
+
+    if ($nama_file) {
+        return $url_api . 'image-admin/' . $nama_file;
+    }
+
+    return default_image();
+}
+
 function url_image_thumbnail($nama_file, $folder_image)
 {
     $url_api = config('Common')->url_api_file ?? '';
@@ -176,6 +187,11 @@ function url_modul_edukasi($modul, $id_modul)
 function key_auth()
 {
     return decrypt_url(session()->get('key_auth'));
+}
+
+function unset_log_redirect()
+{
+    session()->remove("log_redirect");
 }
 
 // --------------------------- time ago ---------------------------
@@ -258,40 +274,28 @@ function conv_month($value)
     switch ($value) {
         case 1:
             return 'Januari';
-            break;
         case 2:
             return 'Februari';
-            break;
         case 3:
             return 'Maret';
-            break;
         case 4:
             return 'April';
-            break;
         case 5:
             return 'Mei';
-            break;
         case 6:
             return 'Juni';
-            break;
         case 7:
             return 'Juli';
-            break;
         case 8:
             return 'Agustus';
-            break;
         case 9:
             return 'September';
-            break;
         case 10:
             return 'Oktober';
-            break;
         case 11:
             return 'November';
-            break;
         case 12:
             return 'Desember';
-            break;
     }
 }
 
@@ -300,40 +304,28 @@ function conv_month_medium($value)
     switch ($value) {
         case 1:
             return 'Jan';
-            break;
         case 2:
             return 'Feb';
-            break;
         case 3:
             return 'Mar';
-            break;
         case 4:
             return 'Apr';
-            break;
         case 5:
             return 'Mei';
-            break;
         case 6:
             return 'Jun';
-            break;
         case 7:
             return 'Jul';
-            break;
         case 8:
             return 'Ags';
-            break;
         case 9:
             return 'Sep';
-            break;
         case 10:
             return 'Okt';
-            break;
         case 11:
             return 'Nov';
-            break;
         case 12:
             return 'Des';
-            break;
     }
 }
 
@@ -369,11 +361,7 @@ function date_ind($value, $param = false, $separator = false)
     $year = $split[0];
     $date = $split[2];
 
-    if ($separator) {
-        $separator = $separator;
-    } else {
-        $separator = ' ';
-    }
+    $separator = $separator || ' ';
 
     if ($param) {
         if ($param == 'long') {
@@ -406,11 +394,7 @@ function datetime_ind($value, $param = false, $separator = false)
     $year = $split[0];
     $date = $split[2];
 
-    if ($separator) {
-        $separator = $separator;
-    } else {
-        $separator = ' ';
-    }
+    $separator = $separator || ' ';
 
     if ($param) {
         if ($param == 'long') {
@@ -543,13 +527,13 @@ function send_email($data)
         ->get()
         ->getRowArray();
 
-    $mail = new PHPMailer(true);
-
     $email = $data['email'];
     $subject = $data['subject'];
     $message = $data['message'];
     $image = $data['image'] ?? '';
     $cid = $data['cid'] ?? 'logo_email';
+
+    $mail = new PHPMailer(true);
 
     try {
         $mail->isSMTP();
