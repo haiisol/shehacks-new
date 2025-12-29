@@ -3,17 +3,14 @@
 namespace App\Controllers\Modul;
 
 use App\Controllers\FrontController;
-use App\Models\MainModel;
 use Config\Database;
 
 class Modul extends FrontController
 {
     protected $db;
-    protected $mainModel;
     public function __construct()
     {
         $this->db = Database::connect();
-        $this->mainModel = new MainModel();
         unset_log_redirect();
     }
 

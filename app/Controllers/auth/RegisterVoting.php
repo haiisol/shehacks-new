@@ -3,22 +3,17 @@ namespace App\Controllers\Auth;
 
 use Config\Database;
 use Config\Services;
-use App\Models\MainModel;
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 use App\Controllers\FrontController;
 
 class RegisterVoting extends FrontController
 {
     protected $db;
     protected $session;
-    protected $mainModel;
 
     public function __construct()
     {
         $this->db = Database::connect();
         $this->session = Services::session();
-        $this->mainModel = new MainModel();
     }
 
     public function index()

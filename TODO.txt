@@ -1,1 +1,2 @@
 - Check view and controller
+- Check model first()

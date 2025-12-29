@@ -35,10 +35,12 @@ class FetchData extends BaseController
 
         if ($logged_in_front) {
             $id_user = key_auth();
-            $get_vote = $this->db->query("SELECT id_user 
-                FROM tb_voting_user 
-                WHERE id_user = ? 
-                AND YEAR(date_create) = ?", [$id_user, $year])->getRowArray();
+            $get_vote = $this->db->table('tb_voting_user')
+                ->select('id_user')
+                ->where('id_user', $id_user)
+                ->where("YEAR(date_create)", $year, false)
+                ->get()
+                ->getRowArray();
 
             if ($get_vote) {
                 $status_vote = 1;
@@ -58,13 +60,13 @@ class FetchData extends BaseController
             $row = [
                 'id_voting_enc' => encrypt_url($key['id_voting']),
                 'nama_founders' => $key['nama_founders'],
-                'nama_usaha'    => $key['nama_usaha'],
-                'bidang_usaha'  => $key['bidang_usaha'],
-                'domisili'      => ucwords(strtolower($key['domisili'])),
-                'description'   => strip_tags($key['description']),
-                'logo'          => url_image($key['logo'], 'image-logo'),
-                'video_upload'  => $key['video_upload'],
-                'status_vote'   => $status_vote,
+                'nama_usaha' => $key['nama_usaha'],
+                'bidang_usaha' => $key['bidang_usaha'],
+                'domisili' => ucwords(strtolower($key['domisili'])),
+                'description' => strip_tags($key['description']),
+                'logo' => url_image($key['logo'], 'image-logo'),
+                'video_upload' => $key['video_upload'],
+                'status_vote' => $status_vote,
             ];
 
             if ($key['kategori'] == 'Innovate') {
@@ -77,8 +79,8 @@ class FetchData extends BaseController
         return json_response([
             'data_mvp' => $data_mvp,
             'data_ide' => $data_ide,
-            'status'   => 1,
-            'message'  => 'Success'
+            'status' => 1,
+            'message' => 'Success'
         ]);
     }
 
@@ -105,8 +107,8 @@ class FetchData extends BaseController
         }
 
         $data = [
-            'id_voting'   => $id_voting,
-            'id_user'     => $id_user,
+            'id_voting' => $id_voting,
+            'id_user' => $id_user,
             'date_create' => date('Y-m-d H:i:s')
         ];
 
@@ -145,19 +147,19 @@ class FetchData extends BaseController
             $get_web = $this->db->table('tb_admin_web')->select('instagram')->where('id', 1)->get()->getRowArray();
 
             $data[] = [
-                'heading'     => $key['heading'],
-                'subheading'  => $key['subheading'],
-                'content'     => $key['content'],
+                'heading' => $key['heading'],
+                'subheading' => $key['subheading'],
+                'content' => $key['content'],
                 'button_text' => $key['button_text'],
-                'button_url'  => $key['button_url'],
-                'image'       => url_image($key['image'], 'image-content'),
-                'instagram'   => $get_web['instagram'] ?? '',
+                'button_url' => $key['button_url'],
+                'image' => url_image($key['image'], 'image-content'),
+                'instagram' => $get_web['instagram'] ?? '',
             ];
         }
 
         return json_response([
-            'data'    => $data,
-            'status'  => 1,
+            'data' => $data,
+            'status' => 1,
             'message' => 'Success'
         ]);
     }
@@ -174,16 +176,16 @@ class FetchData extends BaseController
         $data = [];
         foreach ($query as $key) {
             $data[] = [
-                'heading'    => $key['heading'],
+                'heading' => $key['heading'],
                 'subheading' => $key['subheading'],
-                'image'      => url_image($key['image'], 'image-content'),
-                'image_2'    => url_image($key['image_2'], 'image-content'),
+                'image' => url_image($key['image'], 'image-content'),
+                'image_2' => url_image($key['image_2'], 'image-content'),
             ];
         }
 
         return json_response([
-            'data'    => $data,
-            'status'  => 1,
+            'data' => $data,
+            'status' => 1,
             'message' => 'Success'
         ]);
     }
@@ -201,11 +203,11 @@ class FetchData extends BaseController
         $data = [];
         foreach ($query as $key) {
             $data[] = [
-                'heading'    => $key['heading'],
+                'heading' => $key['heading'],
                 'subheading' => $key['subheading'],
-                'content'    => $key['content'],
-                'tanggal'    => $this->formatTimeModel->tanggal_transaction($key['date_create'], ''),
-                'image'      => url_image($key['image'], 'image-content'),
+                'content' => $key['content'],
+                'tanggal' => $this->formatTimeModel->tanggal_transaction($key['date_create'], ''),
+                'image' => url_image($key['image'], 'image-content'),
             ];
         }
 
@@ -225,11 +227,11 @@ class FetchData extends BaseController
         $data = [];
         foreach ($query as $key) {
             $data[] = [
-                'heading'    => $key['heading'],
+                'heading' => $key['heading'],
                 'subheading' => $key['subheading'],
-                'content'    => $key['content'],
-                'tanggal'    => $this->formatTimeModel->tanggal_transaction($key['date_create'], ''),
-                'image'      => url_image($key['image'], 'image-content'),
+                'content' => $key['content'],
+                'tanggal' => $this->formatTimeModel->tanggal_transaction($key['date_create'], ''),
+                'image' => url_image($key['image'], 'image-content'),
             ];
         }
 
@@ -257,11 +259,11 @@ class FetchData extends BaseController
 
             $data[] = [
                 'url_detail' => url_blog_detail($key['slug'], $key['id_blog']),
-                'heading'    => $key['heading'],
-                'kategori'   => $get_kategori['nama'] ?? 'Uncategorized',
-                'content'    => strip_tags(character_limiter($key['content'], 150)),
-                'tanggal'    => $this->formatTimeModel->tanggal_transaction($key['date_create'], ''),
-                'image'      => url_image($key['gambar'], 'file-blog'),
+                'heading' => $key['heading'],
+                'kategori' => $get_kategori['nama'] ?? 'Uncategorized',
+                'content' => strip_tags(character_limiter($key['content'], 150)),
+                'tanggal' => $this->formatTimeModel->tanggal_transaction($key['date_create'], ''),
+                'image' => url_image($key['gambar'], 'file-blog'),
             ];
         }
 
@@ -290,11 +292,11 @@ class FetchData extends BaseController
 
             $data[] = [
                 'url_detail' => url_blog_detail($key['slug'], $key['id_blog']),
-                'heading'    => $key['heading'],
-                'kategori'   => $get_kategori['nama'] ?? 'Alumni',
-                'content'    => strip_tags(character_limiter($key['content'], 150)),
-                'tanggal'    => $this->formatTimeModel->tanggal_transaction($key['date_create'], ''),
-                'image'      => url_image($key['gambar'], 'file-blog'),
+                'heading' => $key['heading'],
+                'kategori' => $get_kategori['nama'] ?? 'Alumni',
+                'content' => strip_tags(character_limiter($key['content'], 150)),
+                'tanggal' => $this->formatTimeModel->tanggal_transaction($key['date_create'], ''),
+                'image' => url_image($key['gambar'], 'file-blog'),
             ];
         }
 
@@ -315,13 +317,13 @@ class FetchData extends BaseController
         foreach ($query as $key) {
             $data[] = [
                 'heading' => $key['heading'],
-                'video'   => $key['video']
+                'video' => $key['video']
             ];
         }
 
         return json_response([
-            'data'    => $data,
-            'status'  => 1,
+            'data' => $data,
+            'status' => 1,
             'message' => 'Success'
         ]);
     }
@@ -339,16 +341,16 @@ class FetchData extends BaseController
         $data = [];
         foreach ($query as $key) {
             $data[] = [
-                'heading'    => $key['heading'],
+                'heading' => $key['heading'],
                 'subheading' => $key['subheading'],
-                'content'    => $key['content'],
-                'image'      => url_image($key['image'], 'image-content')
+                'content' => $key['content'],
+                'image' => url_image($key['image'], 'image-content')
             ];
         }
 
         return json_response([
-            'data'    => $data,
-            'status'  => 1,
+            'data' => $data,
+            'status' => 1,
             'message' => 'Success'
         ]);
     }
@@ -378,16 +380,16 @@ class FetchData extends BaseController
                 foreach ($partners as $p) {
                     $partner_list[] = [
                         'id_partner' => $p['id_partner'],
-                        'nama'       => $p['nama'],
-                        'image'      => url_image($p['image'], 'image-content'),
-                        'url'        => $p['url']
+                        'nama' => $p['nama'],
+                        'image' => url_image($p['image'], 'image-content'),
+                        'url' => $p['url']
                     ];
                 }
 
                 $data[] = [
                     'id_kategori' => $cat['id_kategori'],
-                    'nama'        => $cat['nama'],
-                    'partner'     => $partner_list
+                    'nama' => $cat['nama'],
+                    'partner' => $partner_list
                 ];
             }
 
@@ -400,7 +402,7 @@ class FetchData extends BaseController
     public function fetch_data_faq()
     {
         $search = trim($this->request->getGet('search') ?? '');
-        $limit  = trim($this->request->getGet('limit') ?? '');
+        $limit = trim($this->request->getGet('limit') ?? '');
 
         $builder = $this->db->table('tb_content')
             ->select('id, heading, description')
@@ -412,7 +414,7 @@ class FetchData extends BaseController
         }
 
         if (!empty($limit)) {
-            $builder->limit((int)$limit);
+            $builder->limit((int) $limit);
         }
 
         $query = $builder->orderBy('id', 'ASC')->get()->getResultArray();
@@ -439,7 +441,7 @@ class FetchData extends BaseController
         foreach ($query as $key) {
             $data[] = [
                 'button_url' => $key['button_url'],
-                'image'      => !empty($key['image']) ? url_image($key['image'], 'image-content') : ''
+                'image' => !empty($key['image']) ? url_image($key['image'], 'image-content') : ''
             ];
         }
 

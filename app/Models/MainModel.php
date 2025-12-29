@@ -40,8 +40,6 @@ class MainModel extends Model
     {
         $get_user = $this->get_admin();
 
-        // if ($get_user['role'] == 'Admin') {
-
         $get_data_akses = $this->get_query_menu($param, $get_user['id_role']);
 
         if ($get_data_akses) {
@@ -51,12 +49,6 @@ class MainModel extends Model
                 return $response;
             }
         }
-
-        // } 
-        // else {
-        //     $access_add = '';
-        //     $access_delete = '';
-        // }
 
         redirect('404');
     }

@@ -4,9 +4,6 @@ namespace App\Controllers\Auth;
 
 use App\Controllers\FrontController;
 use Config\Database;
-use App\Models\MainModel;
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 use Throwable;
 
 class Login extends FrontController
@@ -14,12 +11,10 @@ class Login extends FrontController
 
     protected $session;
     protected $db;
-    protected $mainModel;
     function __construct()
     {
         $this->session = session();
         $this->db = Database::connect();
-        $this->mainModel = new MainModel();
     }
 
     public function index()

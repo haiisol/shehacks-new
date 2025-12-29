@@ -52,8 +52,10 @@ $routes->get('startups_data/(:any)', 'Startups\StartupsData::$1');
 
 
 // ================= Dashboard =================
-$routes->get('dashboard', 'dashboard\Dashboard::index');
-$routes->get('dashboard/show_sertifikat', 'dashboard\Dashboard::show_sertifikat');
+$routes->group('dashboard', ['filter' => 'frontauth'], function ($routes) {
+    $routes->get('/', 'Dashboard\Dashboard::index');
+    $routes->get('show_sertifikat', 'Dashboard\Dashboard::show_sertifikat');
+});
 
 
 // ================= Admin / Panel =================

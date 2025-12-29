@@ -120,7 +120,7 @@
 
         function load_data() {
             $.ajax({
-                url      : '<?php echo base_url();?>dashboard/dashboard/fecth_data_dashboard',
+                url      : '<?php echo base_url();?>dashboard/dashboard/fetch_data_dashboard',
                 dataType : 'json',
                 success:function(response) {
                     $('#load_data_user').html(

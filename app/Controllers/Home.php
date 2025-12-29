@@ -3,9 +3,6 @@
 namespace App\Controllers;
 
 use Config\Database;
-use Config\Services;
-use App\Models\MainModel;
-use App\Models\UserModel;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
@@ -13,17 +10,11 @@ use Psr\Log\LoggerInterface;
 class Home extends FrontController
 {
     protected $db;
-    protected $mainModel;
-    protected $userModel;
 
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
         parent::initController($request, $response, $logger);
-        
         $this->db = Database::connect();
-
-        $this->mainModel = new MainModel();
-        $this->userModel = new UserModel();
     }
 
     public function index()

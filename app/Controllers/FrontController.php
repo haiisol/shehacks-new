@@ -26,7 +26,7 @@ class FrontController extends BaseController
         if ($this->data['logged_in_front']) {
             $id_user = key_auth();
             $user = $this->userModel->getUserName($id_user);
-            $this->data['user_name'] = $user['nama'] ?? '';
+            $this->data['user_name'] = $user->nama ?? '';
         }
 
         if (!$this->request->isAJAX()) {

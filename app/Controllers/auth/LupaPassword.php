@@ -3,23 +3,17 @@
 namespace App\Controllers\Auth;
 
 use App\Controllers\FrontController;
-use App\Models\MainModel;
 use Config\Database;
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 
 class LupaPassword extends FrontController
 {
 
     protected $db;
-    protected $mainModel;
     protected $session;
 
     public function __construct()
     {
         $this->db = Database::connect();
-        $this->mainModel = new MainModel();
         $this->session = session();
     }
 
