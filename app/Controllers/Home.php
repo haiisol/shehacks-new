@@ -5,6 +5,7 @@ namespace App\Controllers;
 use Config\Database;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use Config\Services;
 use Psr\Log\LoggerInterface;
 
 class Home extends FrontController
@@ -73,15 +74,15 @@ class Home extends FrontController
 
     function get_address()
     {
-        $validation = service('validation');
-        $id = $this->request->getGet('id', TRUE);
-        $param = $this->request->getGet('param', TRUE);
+        $validation = Services::validation();
+        $id = trim($this->request->getGet('id'));
+        $param = trim($this->request->getGet('param'));
 
         $rules = [
-            'id' => 'trim|required|numeric',
+            'id' => 'required|numeric',
             'param' => [
-                'rules' => 'trim|required|callback_valid_alfabet',
-                'errors' => []
+                'required',
+                [$this, 'valid_alfabet',]
             ]
         ];
 

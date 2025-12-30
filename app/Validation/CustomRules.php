@@ -4,7 +4,7 @@ namespace App\Validation;
 
 class CustomRules
 {
-    public function password_conf(string $password, string &$error = null): bool
+    public function password_conf(string $password, ?string &$error = null): bool
     {
         $hasUpper = preg_match('/[A-Z]/', $password);
         $hasLower = preg_match('/[a-z]/', $password);

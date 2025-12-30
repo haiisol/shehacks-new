@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers\Auth;
 
-use App\Models\MainModel;
+use Config\Services;
 use Config\Database;
 use App\Controllers\FrontController;
 
@@ -9,7 +9,6 @@ class Register extends FrontController
 {
     protected $db;
     protected $session;
-    protected $validation;
 
     public function __construct()
     {
@@ -27,8 +26,15 @@ class Register extends FrontController
             return redirect()->to('dashboard');
         }
 
+        $get_pend = $this->mainModel->get_data_order("tb_master_pendidikan", "nama DESC");
+        $get_mdi = $this->mainModel->get_data_where_order("tb_master_dapat_informasi", "0", "status_delete", "urutan ASC");
+        $get_prov = $this->mainModel->get_data_order("tb_master_province", "name ASC");
+
         $data = [
             'title' => 'Register',
+            'get_pend' => $get_pend,
+            'get_mdi' => $get_mdi,
+            'get_prov' => $get_prov,
             'page' => 'auth/register'
         ];
 
@@ -134,6 +140,8 @@ class Register extends FrontController
 
     function post_register_personal()
     {
+        $validation = Services::validation();
+
         $dataPost = [
             'email' => $this->request->getPost('email'),
             'tanggal_lahir' => $this->request->getPost('tanggal_lahir'),
@@ -154,10 +162,10 @@ class Register extends FrontController
             'jenis_kelamin' => 'required',
         ];
 
-        if (!$this->validation->setRules($rules)->run($dataPost)) {
+        if (!$validation->setRules($rules)->run($dataPost)) {
             return json_response([
                 'status' => 0,
-                'message' => $this->validation->listErrors(),
+                'message' => $validation->listErrors(),
             ]);
         }
 
@@ -235,6 +243,8 @@ class Register extends FrontController
 
     function post_register_startup()
     {
+        $errors = [];
+
         if (!$this->validate_file_upload('file_pitchdeck')) {
             $errors[] = 'File pitchdeck harus PDF atau PowerPoint (.ppt/.pptx)';
         }
@@ -251,7 +261,7 @@ class Register extends FrontController
             $errors[] = 'File profile komunitas harus PDF atau PowerPoint';
         }
 
-        if ($errors) {
+        if (!empty($errors)) {
             return json_response([
                 'status' => 0,
                 'message' => implode('<br>', $errors),
@@ -379,37 +389,59 @@ class Register extends FrontController
         ]);
     }
 
-    private function upload_file_pdf($name, $filename)
+    private function upload_file_pdf(string $fieldName, string $filename): string
     {
-        $kode_user = strtoupper(substr(uniqid(), 7)) . date('my');
+        $file = $this->request->getFile($fieldName);
 
-        $config['upload_path'] = './file_media/file-user/';
-        $config['allowed_types'] = 'pdf|ppt|pptx';
-        $config['file_name'] = $filename . '-' . $kode_user;
-
-        $this->upload->initialize($config);
-
-        if ($this->upload->do_upload($name)) {
-            return $this->upload->data('file_name');
-        } else {
+        if (!$file || !$file->isValid()) {
             return '';
         }
+
+        $allowed = ['pdf', 'ppt', 'pptx'];
+        $ext = $file->guessExtension();
+
+        if (!in_array($ext, $allowed, true)) {
+            return '';
+        }
+
+        $kodeUser = strtoupper(substr(uniqid(), 7)) . date('my');
+        $newName = $filename . '-' . $kodeUser . '.' . $ext;
+
+        $path = FCPATH . 'file_media/file-user/';
+
+        if (!$file->hasMoved()) {
+            $file->move($path, $newName);
+            return $newName;
+        }
+
+        return '';
     }
 
-    private function upload_file_image($name, $filename)
+    private function upload_file_image(string $fieldName, string $filename): string
     {
-        $kode_user = strtoupper(substr(uniqid(), 7)) . date('my');
+        $file = $this->request->getFile($fieldName);
 
-        $config['upload_path'] = './file_media/file-user/';
-        $config['allowed_types'] = 'jpg|jpeg|png|webp';
-        $config['file_name'] = $filename . '-' . $kode_user;
-
-        $this->upload->initialize($config);
-
-        if ($this->upload->do_upload($name)) {
-            return $this->upload->data('file_name');
-        } else {
+        if (!$file || !$file->isValid()) {
             return '';
         }
+
+        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+        $ext = $file->guessExtension();
+
+        if (!in_array($ext, $allowed, true)) {
+            return '';
+        }
+
+        $kodeUser = strtoupper(substr(uniqid(), 7)) . date('my');
+        $newName = $filename . '-' . $kodeUser . '.' . $ext;
+
+        $path = FCPATH . 'file_media/file-user/';
+
+        if (!$file->hasMoved()) {
+            $file->move($path, $newName);
+            return $newName;
+        }
+
+        return '';
     }
 }

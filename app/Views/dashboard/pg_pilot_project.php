@@ -16,8 +16,6 @@
                 <div id="feedback-profile" class="mb-3"></div>
 
                 <form method="post" id="form-profile-update" class="form-style">
-                    <input type="hidden" name="id_user" value="<?php echo $id_user; ?>">
-
                     <div class="row">
                         <div class="">    
                             <div class="form-group">
@@ -79,7 +77,6 @@
             function load_data_profile() {
 
                 $.ajax({
-                    type     : 'POST',
                     url      : '<?php echo base_url();?>dashboard/dashboard/fetch_data_profile',
                     dataType : 'json',
                     success: function(response) {
@@ -196,7 +193,7 @@
                     $('#btn-submit-profile').buttonLoader('start');
 
                     $.ajax({
-                        method   : 'post',
+                        method   : 'POST',
                         url      : '<?php echo base_url(); ?>dashboard/dashboard/post_update_pilot_project',
                         data     : new FormData(this),
                         dataType : 'json',

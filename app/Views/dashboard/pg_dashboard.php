@@ -1,11 +1,8 @@
-<?php 
-    $query_user = $this->db->query("SELECT * FROM tb_user WHERE id_user=".decrypt_url($id_user)." ")->row_array();
-?>
 <div class="card card-style">
     <div class="card-body">
         <div class="banner-dashboard" id="load_data"></div>
 
-        <?php if ($query_user['kategori_user'] != "") { ?>
+        <?php if ($kategori_user) { ?>
             <div class="education-section">
                 <div class="section-title style-2" id="menu_hide">
                     <div>
@@ -70,7 +67,7 @@
         var limit = 9;
         var start = 0;
 
-        var data_user = '<?php echo $query_user['kategori_user']; ?>';
+        var data_user = '<?php echo $kategori_user; ?>';
 
         if (data_user == "Ideasi") {
             load_data_modul(limit, start, 'html');
@@ -186,9 +183,7 @@
                  url      : '<?php echo base_url();?>analytic/post_cta_btn',
                  data     : { data:data, url:url_visit },
                  dataType : 'json',
-                 success:function(response) {
-
-                 }
+                 success:function(res) {}
             });
             return false;
         }

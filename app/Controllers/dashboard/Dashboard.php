@@ -108,26 +108,44 @@ class Dashboard extends FrontController
     function get_page()
     {
         $param_pg = $this->request->getGet('param_pg');
-        $data['id_user'] = encrypt_url(key_auth());
+        $id_user = key_auth();
 
         $response['param_pg'] = $param_pg;
 
         if ($param_pg == 'dashboard') {
+            $query = $this->db->table('tb_user')
+                ->select('nama,email')
+                ->where('id_user', $id_user)
+                ->get()
+                ->getRowArray();
+
+            $data['kategori_user'] = $query['kategori_user'] ?? '';
+
             $response['url'] = 'dashboard';
             $response['title'] = 'Dashboard';
             $response['page'] = view('dashboard/pg_dashboard', $data);
         } elseif ($param_pg == 'profile') {
+            $get_pend = $this->mainModel->get_data_order("tb_master_pendidikan", "nama DESC");
+            $get_mdi = $this->mainModel->get_data_order("tb_master_dapat_informasi", "urutan ASC");
+            $get_prov = $this->mainModel->get_data_order("tb_master_province", "name ASC");
+
+            $data = [
+                'get_pend' => $get_pend,
+                'get_mdi' => $get_mdi,
+                'get_prov' => $get_prov
+            ];
+
             $response['url'] = 'dashboard?profile';
             $response['title'] = 'Profile';
             $response['page'] = view('dashboard/pg_profile', $data);
         } elseif ($param_pg == 'pilot_project') {
             $response['url'] = 'dashboard?pilot_project';
             $response['title'] = 'Pilot Project';
-            $response['page'] = view('dashboard/pg_pilot_project', $data);
+            $response['page'] = view('dashboard/pg_pilot_project');
         } elseif ($param_pg == 'password') {
             $response['url'] = 'dashboard?password';
             $response['title'] = 'Change Password';
-            $response['page'] = view('dashboard/pg_password', $data);
+            $response['page'] = view('dashboard/pg_password');
         } else {
             return json_response(['status' => 0, 'message' => 'Invalid page']);
         }
@@ -524,7 +542,7 @@ class Dashboard extends FrontController
         if ($file->isValid() && !$file->hasMoved()) {
 
             $kode_user = strtoupper(substr(uniqid(), 7)) . date('my');
-            $newName = $filename . '-' . $kode_user . '.' . $file->getExtension();
+            $newName = $filename . '-' . $kode_user . '.' . $file->guessExtension();
 
             $file->move(FCPATH . 'file_media/file-user/', $newName);
 
@@ -557,7 +575,7 @@ class Dashboard extends FrontController
         if ($file->isValid() && !$file->hasMoved()) {
 
             $kode_user = strtoupper(substr(uniqid(), 7)) . date('my');
-            $newName = $filename . '-' . $kode_user . '.' . $file->getExtension();
+            $newName = $filename . '-' . $kode_user . '.' . $file->guessExtension();
 
             $file->move(FCPATH . 'file_media/file-user/', $newName);
 

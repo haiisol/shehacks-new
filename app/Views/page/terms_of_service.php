@@ -29,14 +29,7 @@
                     
                     // data return
                     if (response.status == 1 ) {
-
-                        var load_data = '';
-
-                        $.each(response.data, function(i, val) {
-                            
-                            load_data += '<div class="post-description reset-style">'+val.content+'</div>';
-                        });
-
+                        let load_data = '<div class="post-description reset-style">'+response.data.content+'</div>';
                         $('#load_data_content').html(load_data);
                     }
                 }

@@ -15,10 +15,9 @@
                 <div id="feedback-profile" class="mb-3"></div>
 
                 <form method="post" id="form-profile-update" class="form-style">
-                    <input type="hidden" name="id_user" value="<?php echo $id_user; ?>">
                     <div class="row">
                         <div class="col-lg-7">
-                            <div class="row wrap-option-pilihan mb-3">
+                            <div class="row wrap-option-pilihan d-none mb-3">
                                 <div class="col-4">
                                     <div class="radio-style">
                                         <input type="radio" name="kategori_user_pilihan" id="kategori_user1" value="Ideasi" class="radio-button">
@@ -102,7 +101,6 @@
                                 <label class="control-label">Pendidikan <span class="required">*</span></label>
                                 <select name="pendidikan" id="pendidikan" data-placeholder="Pilih pendidikan" data-allow-clear="false" class="form-control select-custome-search pendidikan">
                                     <option value="" selected disabled></option>
-                                    <?php $get_pend = $this->main_model->get_data_order("tb_master_pendidikan", "nama DESC"); ?>
                                     <?php foreach ($get_pend as $key_pend) { ?>
                                         <option value="<?php echo $key_pend['id_pendidikan']; ?>"><?php echo $key_pend['nama']; ?></option>
                                     <?php }; ?>
@@ -113,7 +111,6 @@
                                 <label class="control-label">Pilih Provinsi <span class="required">*</span></label>
                                 <select name="provinsi" id="provinsi" data-placeholder="Pilih lokasi" data-allow-clear="false" class="form-control select-custome-search provinsi">
                                     <option value="" selected disabled></option>
-                                    <?php $get_prov = $this->main_model->get_data_order("tb_master_province", "name ASC"); ?>
                                     <?php foreach ($get_prov as $key_prov) { ?>
                                         <option value="<?php echo $key_prov['id']; ?>"><?php echo $key_prov['name']; ?></option>
                                     <?php }; ?>
@@ -135,7 +132,6 @@
                             <label class="control-label">Darimana Anda mendapat informasi tentang SheHacks <span class="required">*</span></label>
                             <select name="dapat_informasi" id="dapat_informasi" data-placeholder="Pilih Informasi" data-allow-clear="false" class="form-control select-custome-search provinsi">
                                 <option value="" selected disabled></option>
-                                <?php $get_mdi = $this->main_model->get_data_order("tb_master_dapat_informasi", "urutan ASC"); ?>
                                 <?php foreach ($get_mdi as $key_mdi) { ?>
                                     <option value="<?php echo $key_mdi['id_informasi']; ?>"><?php echo $key_mdi['nama']; ?></option>
                                 <?php }; ?>
@@ -311,7 +307,7 @@
                                     return [true, '', ''];
                                 }
                             }
-                        }); 
+                        });
                         
                         if (response.kategori_user == 'MVP') {
                             $('.wrap-option-pilihan').addClass('d-none');
@@ -347,6 +343,7 @@
                         } else {
                             $('.wrap-ifoption-mvp').addClass('d-none');
                             $('.wrap-ifoption-ideasi').addClass('d-none');
+                            $('.wrap-option-pilihan').removeClass('d-none');
                         }
 
                         $('#dapat_informasi').select2().val(response.dapat_informasi).trigger('change.select2');
@@ -402,7 +399,7 @@
             // cek phone
             // $.validator.addMethod('cek_phone', function(value, element) {
             //     $.ajax({
-            //         url    : '<?php echo base_url();?>dashboard/dashboard/cek_phone',
+            //         url    : '<?php //echo base_url();?>dashboard/dashboard/cek_phone',
             //         data   : { value:value },
             //         dataType : 'json',
             //         success: function(response) {
@@ -594,7 +591,7 @@
                     $('#btn-submit-profile').buttonLoader('start');
 
                     $.ajax({
-                        method   : 'post',
+                        method   : 'POST',
                         url      : '<?php echo base_url(); ?>dashboard/dashboard/post_update_profile',
                         data     : new FormData(this),
                         dataType : 'json',

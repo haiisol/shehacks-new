@@ -8,7 +8,6 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         const forms = document.querySelectorAll("form");
-
         forms.forEach(form => {
             if (!form.querySelector(`input[name="${CSRF.name}"]`)) {
                 const input = document.createElement("input");
@@ -21,7 +20,7 @@
     });
 
     $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
+        beforeSend: function (xhr, settings) {
 
             ajaxMethod = settings.type;
 
@@ -34,7 +33,7 @@
                 }
             }
         },
-        complete: function(xhr) {
+        complete: function (xhr) {
 
             if (ajaxMethod === 'POST') {
                 try {
@@ -45,15 +44,48 @@
                         document.querySelectorAll(`input[name="${CSRF.name}"]`)
                             .forEach(el => el.value = CSRF.hash);
                     }
-                } catch(e) {
+                } catch (e) {
                     console.error('Invalid CSRF JSON:', e);
                 }
             }
         }
     });
 
-    $(document).on('show.bs.modal', '.modal', function() {
+    $(document).on('show.bs.modal', '.modal', function () {
         const input = $(this).find(`input[name="${CSRF.name}"]`);
         input.val(CSRF.hash);
     });
+
+    $(document).on("ajaxSuccess", function (event, xhr) {
+        let res;
+
+        try {
+            res = xhr.responseJSON ?? JSON.parse(xhr.responseText);
+        } catch (_) {
+            return;
+        }
+
+        if (res?.csrf_name && res?.csrf_hash) {
+            CSRF.name = res.csrf_name;
+            CSRF.hash = res.csrf_hash;
+
+            document.querySelectorAll('input[type="hidden"]').forEach(el => {
+                if (el.name !== CSRF.name && el.name.startsWith('csrf')) {
+                    el.remove();
+                }
+            });
+
+            document.querySelectorAll('form').forEach(form => {
+                let input = form.querySelector(`input[name="${CSRF.name}"]`);
+                if (!input) {
+                    input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = CSRF.name;
+                    form.appendChild(input);
+                }
+                input.value = CSRF.hash;
+            });
+        }
+    });
+
 </script>

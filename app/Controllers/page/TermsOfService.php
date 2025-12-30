@@ -29,7 +29,7 @@ class TermsOfService extends FrontController
             $result = $model->getBySection('terms_condition');
 
             return json_response([
-                'data' => $result[0] ?? [],
+                'data' => $result ?? [],
                 'status' => 1,
                 'message' => 'Success'
             ]);

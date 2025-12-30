@@ -11,7 +11,6 @@
             success:function(response) {
 
                 if (response.status == 1) {
-
                     $.each(response.data, function(i, val) {
                         
                         var load_data = '';

@@ -8,16 +8,16 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 
 // ================= Auth =================
-$routes->get('login', 'auth\Login::index');
-$routes->post('login-verify', 'auth\Login::login_verify');
-$routes->get('logout', 'auth\Login::logout');
+$routes->get('login', 'Auth\Login::index');
+$routes->get('login-verify', 'Auth\Login::login_verify');
+$routes->get('logout', 'Auth\Login::logout');
 
-$routes->get('register', 'auth\Register::index');
-$routes->get('register/verifikasi', 'auth\Register::verifikasi');
+$routes->get('register', 'Auth\Register::index');
+$routes->get('register/verifikasi', 'Auth\Register::verifikasi');
 
-$routes->get('lupa-password', 'auth\Lupa_password::index');
-$routes->post('verifikasi-lupa-password', 'auth\Lupa_password::verifikasi');
-$routes->post('form-lupa-password', 'auth\Lupa_password::form_lupa_password');
+$routes->get('lupa-password', 'Auth\LupaPassword::index');
+$routes->post('verifikasi-lupa-password', 'Auth\LupaPassword::verifikasi');
+$routes->post('form-lupa-password', 'Auth\LupaPassword::form_lupa_password');
 
 
 // ================= Pages =================
@@ -36,13 +36,13 @@ $routes->get('preview-voting', 'Home::preview_voting');
 
 
 // ================= Artikel =================
-$routes->get('artikel', 'artikel\Artikel::index');
+$routes->get('artikel', 'Artikel\Artikel::index');
 $routes->get('artikel/(:any)/(:any)', 'Artikel\Artikel::detail/$1/$2');
 
 $routes->get('artikel_data/(:any)', 'Artikel\ArtikelData::$1');
 
-$routes->get('artikel-tags/(:any)/(:any)', 'artikel\Artikel::tags/$1/$2');
-$routes->get('artikel-kategori/(:any)/(:any)', 'artikel\Artikel::tags/$1/$2');
+$routes->get('artikel-tags/(:any)/(:any)', 'Artikel\Artikel::tags/$1/$2');
+$routes->get('artikel-kategori/(:any)/(:any)', 'Artikel\Artikel::tags/$1/$2');
 
 
 // ================= Startups =================
@@ -93,10 +93,33 @@ $routes->get('fetch/fetch_data/fetch_data_partner', 'Fetch\FetchData::fetch_data
 $routes->get('fetch/fetch_data/fetch_data_faq', 'Fetch\FetchData::fetch_data_faq');
 
 $routes->get('page/terms_of_service/fetch_data', 'Page\TermsOfService::fetch_data');
+$routes->get('page/privacy_policy/fetch_data', 'Page\PrivacyPolicy::fetch_data');
 $routes->get('page/webinar/fetch_data_webinar', 'Page\Webinar::fetch_data_webinar');
+$routes->get('startups_data/fetch_data_detail', 'Page\StartupsData::fetch_data_detail');
 
+$routes->get('dashboard/dashboard/get_page', 'Dashboard\Dashboard::get_page');
+$routes->get('dashboard/dashboard/fetch_data_dashboard', 'Dashboard\Dashboard::fetch_data_dashboard');
+$routes->get('dashboard/dashboard/fetch_data_profile', 'Dashboard\Dashboard::fetch_data_profile');
+$routes->get('dashboard/dashboard/cek_file_pitchdeck', 'Dashboard\Dashboard::cek_file_pitchdeck');
+$routes->get('dashboard/dashboard/cek_file_pengajuan_kegiatan', 'Dashboard\Dashboard::cek_file_pengajuan_kegiatan');
+$routes->get('dashboard/dashboard/get_modal_event', 'Dashboard\Dashboard::get_modal_event');
+$routes->get('dashboard/dashboard/generate_channel', 'Dashboard\Dashboard::generate_channel');
+$routes->get('dashboard/dashboard/close_modal_event', 'Dashboard\Dashboard::close_modal_event');
+
+$routes->get('home/get_address', 'Home::get_address');
+
+$routes->post('auth/login/post_login_verify', 'Auth\Login::post_login_verify');
+$routes->post('auth/login/cek_password_lama', 'Auth\Login::cek_password_lama');
+$routes->post('auth/register/post_register_profile', 'Auth\Register::post_register_profile');
+$routes->post('auth/register/post_register_personal', 'Auth\Register::post_register_personal');
+$routes->post('auth/register/post_register_startup', 'Auth\Register::post_register_startup');
+
+$routes->post('dashboard/dashboard/post_update_profile', 'Dashboard\Dashboard::post_update_profile');
+$routes->post('dashboard/dashboard/post_update_pilot_project', 'Dashboard\Dashboard::post_update_pilot_project');
+$routes->post('dashboard/dashboard/post_change_password', 'Dashboard\Dashboard::post_change_password');
 
 // Analytics
 $routes->post('analytic/post_visitors', 'Analytic::post_visitors');
 $routes->post('analytic/post_cta_btn', 'Analytic::post_cta_btn');
 $routes->post('analytic/post_blog_viewer', 'Analytic::post_blog_viewer');
+$routes->post('analytic/post_startups_viewer', 'Analytic::post_startups_viewer');

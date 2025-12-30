@@ -22,9 +22,9 @@ if ($event_running == 'false') {
 
     <!-- Meta Pixel Code -->
     <script>
-        ! function(f, b, e, v, n, t, s) {
+        ! function (f, b, e, v, n, t, s) {
             if (f.fbq) return;
-            n = f.fbq = function() {
+            n = f.fbq = function () {
                 n.callMethod ?
                     n.callMethod.apply(n, arguments) : n.queue.push(arguments)
             };
@@ -43,25 +43,26 @@ if ($event_running == 'false') {
         fbq('init', '1609763062567641');
         fbq('track', 'PageView');
     </script>
-    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1609763062567641&ev=PageView&noscript=1" /></noscript>
+    <noscript><img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=1609763062567641&ev=PageView&noscript=1" /></noscript>
     <!-- End Meta Pixel Code -->
 
     <!-- TikTok Pixel Code Start -->
     <script>
-        ! function(w, d, t) {
+        ! function (w, d, t) {
             w.TiktokAnalyticsObject = t;
             var ttq = w[t] = w[t] || [];
-            ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie", "holdConsent", "revokeConsent", "grantConsent"], ttq.setAndDefer = function(t, e) {
-                t[e] = function() {
+            ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie", "holdConsent", "revokeConsent", "grantConsent"], ttq.setAndDefer = function (t, e) {
+                t[e] = function () {
                     t.push([e].concat(Array.prototype.slice.call(arguments, 0)))
                 }
             };
             for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
-            ttq.instance = function(t) {
+            ttq.instance = function (t) {
                 for (
                     var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]);
                 return e
-            }, ttq.load = function(e, n) {
+            }, ttq.load = function (e, n) {
                 var r = "https://analytics.tiktok.com/i18n/pixel/events.js",
                     o = n && n.partner;
                 ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = r, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {};
@@ -120,11 +121,18 @@ if ($event_running == 'false') {
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
+        as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload"
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        as="style" onload="this.onload=null;this.rel='stylesheet'">
 
-    <link href="<?php echo base_url(); ?>assets/front/vendor/select2/css/select2.min.css" rel="stylesheet" type="text/css">
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="<?php echo base_url(); ?>assets/front/vendor/select2/css/select2.min.css" rel="stylesheet"
+        type="text/css">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" as="style"
+        onload="this.onload=null;this.rel='stylesheet'"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <link href="<?php echo base_url(); ?>assets/front/css/style.css" rel="stylesheet" type="text/css">
     <script src="<?php echo base_url(); ?>assets/front/vendor/jquery/jquery.min.js"></script>
@@ -133,7 +141,9 @@ if ($event_running == 'false') {
     <script defer src="<?php echo base_url(); ?>assets/front/vendor/jquery-validation/jquery.validate.min.js"></script>
     <script defer src="<?php echo base_url(); ?>assets/front/vendor/jquery-validation/additional-methods.js"></script>
     <script defer src="<?php echo base_url(); ?>assets/front/js/plugins.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/2.3.1/jsencrypt.min.js" integrity="sha512-zDvrqenA0eFJZCxBsryzUZcvihvNlEXbteMv62yRxdhR4s7K1aaz+LjsRyfk6M+YJLyAJEuuquIAI8I8GgLC8A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/2.3.1/jsencrypt.min.js"
+        integrity="sha512-zDvrqenA0eFJZCxBsryzUZcvihvNlEXbteMv62yRxdhR4s7K1aaz+LjsRyfk6M+YJLyAJEuuquIAI8I8GgLC8A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <!-- G-ZX39TW5V2R -->
     <!-- G-F2PZLW29CG -->
@@ -174,7 +184,7 @@ if ($event_running == 'false') {
 
         if (!in_array($page, $exclude)) {
             echo view('component/layout/footer');
-        } 
+        }
         ?>
     </main>
 
@@ -189,7 +199,7 @@ if ($event_running == 'false') {
         function trigger_cta_event(data) {
             var url_visit = getUrlVisit();
 
-            setTimeout(function() {
+            setTimeout(function () {
                 $.ajax({
                     method: 'POST',
                     url: '<?php echo base_url(); ?>analytic/post_cta_btn',
@@ -198,13 +208,17 @@ if ($event_running == 'false') {
                         url: url_visit
                     },
                     dataType: 'json',
-                    success: function(response) {}
+                    success: function (res) {}
                 });
                 return false;
             }, 2000);
         }
 
-        $(document).ready(function() {
+        $(document).on("ajaxSuccess", function(event, jqXHR, ajaxOptions, res) {
+           $('input[name="' + res.csrf_name + '"]').val(res.csrf_hash);
+        });
+
+        $(document).ready(function () {
 
             var page = '<?php echo $page; ?>';
 
@@ -221,11 +235,13 @@ if ($event_running == 'false') {
                         url: url_visit
                     },
                     dataType: 'json',
-                    success: function(response) {}
+                    success: function (res) {
+                        
+                    }
                 });
             }
 
-            $(document).on('click', '.cta-btn-trigger', function(e) {
+            $(document).on('click', '.cta-btn-trigger', function (e) {
                 e.preventDefault();
 
                 var data = $(this).attr('data');
@@ -240,8 +256,8 @@ if ($event_running == 'false') {
                         url: url_visit
                     },
                     dataType: 'json',
-                    success: function(response) {
-                        setTimeout(function() {
+                    success: function (res) {
+                        setTimeout(function () {
                             if ((toggle) && (toggle !== 'undefined')) {
                                 $(toggle).modal('show');
                             } else {
@@ -293,7 +309,7 @@ if ($event_running == 'false') {
                 $('#load_data_announce_visit').html(load_data);
             }
 
-            $(document).on('click', '.trigg-announce', function(e) {
+            $(document).on('click', '.trigg-announce', function (e) {
                 e.preventDefault();
                 $('#load_data_announce_visit').toggleClass('show close');
                 setCookie('cann', 'true', 7);
@@ -302,14 +318,21 @@ if ($event_running == 'false') {
         });
     </script>
 
-    <link href="<?php echo base_url(); ?>assets/front/vendor/lineicons/lineicons.min.css" rel="stylesheet" type="text/css" rel="preconnect">
+    <link href="<?php echo base_url(); ?>assets/front/vendor/lineicons/lineicons.min.css" rel="stylesheet"
+        type="text/css" rel="preconnect">
     <!-- <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'"> -->
-    <link href="<?php echo base_url(); ?>assets/front/vendor/fontawesome/css/all.min.css" rel="stylesheet" type="text/css">
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link href="<?php echo base_url(); ?>assets/front/vendor/fontawesome/css/all.min.css" rel="stylesheet"
+        type="text/css">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
 
     <script defer src="<?php echo base_url(); ?>assets/front/vendor/jquery.theia.sticky.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+        integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
+        crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
+        integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
+        crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
     <script defer src="<?php echo base_url(); ?>assets/front/js/main.js"></script>
 
@@ -321,7 +344,9 @@ if ($event_running == 'false') {
     </script>
 
     <noscript>
-        <iframe src="https://9410194.fls.doubleclick.net/activityi;src=9410194;type=indos0;cat=sheha0;dc_lat=;dc_rdid=;tag_for_child_directed_treatment=;tfua=;npa=;gdpr=${GDPR};gdpr_consent=${GDPR_CONSENT_755};ord=1?" width="1" height="1" frameborder="0" style="display:none"></iframe>
+        <iframe
+            src="https://9410194.fls.doubleclick.net/activityi;src=9410194;type=indos0;cat=sheha0;dc_lat=;dc_rdid=;tag_for_child_directed_treatment=;tfua=;npa=;gdpr=${GDPR};gdpr_consent=${GDPR_CONSENT_755};ord=1?"
+            width="1" height="1" frameborder="0" style="display:none"></iframe>
     </noscript>
     <!-- End of Floodlight Tag: Please do not remove -->
 

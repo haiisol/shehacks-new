@@ -34,7 +34,7 @@ class PrivacyPolicy extends FrontController
             $result = $model->getBySection('privacy_policy');
 
             return json_response([
-                'data' => $result[0] ?? [],
+                'data' => $result ?? [],
                 'status' => 1,
                 'message' => 'Success'
             ]);

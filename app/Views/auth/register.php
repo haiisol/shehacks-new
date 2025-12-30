@@ -119,7 +119,6 @@
                         <label class="control-label">Pendidikan <span class="required">*</span></label>
                         <select name="pendidikan" id="pendidikan" data-placeholder="Pilih pendidikan" data-allow-clear="false" class="form-control select-custome-search pendidikan">
                             <option value="" selected disabled></option>
-                            <?php $get_pend = $this->main_model->get_data_order("tb_master_pendidikan", "nama DESC"); ?>
                             <?php foreach ($get_pend as $key_pend) { ?>
                                 <option value="<?php echo $key_pend['id_pendidikan']; ?>"><?php echo $key_pend['nama']; ?></option>
                             <?php }; ?>
@@ -143,7 +142,6 @@
                         <label class="control-label">Darimana Anda mendapat informasi tentang SheHacks <span class="required">*</span></label>
                         <select name="dapat_informasi" id="dapat_informasi" data-placeholder="Pilih Informasi" data-allow-clear="false" class="form-control select-custome-search">
                             <option value="" selected disabled></option>
-                            <?php $get_mdi = $this->main_model->get_data_where_order("tb_master_dapat_informasi", "0", "status_delete", "urutan ASC"); ?>
                             <?php foreach ($get_mdi as $key_mdi) { ?>
                                 <option value="<?php echo $key_mdi['id_informasi']; ?>"><?php echo $key_mdi['nama']; ?></option>
                             <?php }; ?>
@@ -172,7 +170,6 @@
                         <label class="control-label">Pilih Provinsi <span class="required">*</span></label>
                         <select name="provinsi" id="provinsi" data-placeholder="Pilih provinsi" data-allow-clear="false" class="form-control select-custome-search provinsi">
                             <option value="" selected disabled></option>
-                            <?php $get_prov = $this->main_model->get_data_order("tb_master_province", "name ASC"); ?>
                             <?php foreach ($get_prov as $key_prov) { ?>
                                 <option value="<?php echo $key_prov['id']; ?>"><?php echo $key_prov['name']; ?></option>
                             <?php }; ?>
