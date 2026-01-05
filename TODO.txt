@@ -1,2 +1,3 @@
 - Check view and controller
 - Check model first()
+- Check race condition CSRF token post_visitor with the other AJAX functions

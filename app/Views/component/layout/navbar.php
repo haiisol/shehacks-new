@@ -73,9 +73,8 @@
                 </div>
 
                 <div class="navbar-action">
-                    <?php if ($logged_in_front == FALSE) { ?>
-                        
-                        <?php 
+                    <?php 
+                        if ($logged_in_front == FALSE) {
                             if ($register_button) {
                                 $btn_nav = 'Masuk/Daftar';
                             } else {

@@ -99,6 +99,7 @@ $routes->get('startups_data/fetch_data_detail', 'Page\StartupsData::fetch_data_d
 
 $routes->get('dashboard/dashboard/get_page', 'Dashboard\Dashboard::get_page');
 $routes->get('dashboard/dashboard/fetch_data_dashboard', 'Dashboard\Dashboard::fetch_data_dashboard');
+$routes->get('dashboard/dashboard/fetch_data_modul', 'Dashboard\Dashboard::fetch_data_modul');
 $routes->get('dashboard/dashboard/fetch_data_profile', 'Dashboard\Dashboard::fetch_data_profile');
 $routes->get('dashboard/dashboard/cek_file_pitchdeck', 'Dashboard\Dashboard::cek_file_pitchdeck');
 $routes->get('dashboard/dashboard/cek_file_pengajuan_kegiatan', 'Dashboard\Dashboard::cek_file_pengajuan_kegiatan');
@@ -108,6 +109,7 @@ $routes->get('dashboard/dashboard/close_modal_event', 'Dashboard\Dashboard::clos
 
 $routes->get('home/get_address', 'Home::get_address');
 
+$routes->post('auth/login/post_login', 'Auth\Login::post_login');
 $routes->post('auth/login/post_login_verify', 'Auth\Login::post_login_verify');
 $routes->post('auth/login/cek_password_lama', 'Auth\Login::cek_password_lama');
 $routes->post('auth/register/post_register_profile', 'Auth\Register::post_register_profile');
@@ -123,3 +125,6 @@ $routes->post('analytic/post_visitors', 'Analytic::post_visitors');
 $routes->post('analytic/post_cta_btn', 'Analytic::post_cta_btn');
 $routes->post('analytic/post_blog_viewer', 'Analytic::post_blog_viewer');
 $routes->post('analytic/post_startups_viewer', 'Analytic::post_startups_viewer');
+
+// Clear Cache
+$routes->get('clear-cache', 'CacheController::clear');

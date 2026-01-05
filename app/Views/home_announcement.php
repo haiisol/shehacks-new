@@ -1,8 +1,3 @@
-<?php 
-    $web = $this->main_model->get_admin_web(); 
-    $logged_in_front = $this->session->userdata('logged_in_front');
-?>
-
 <section class="yfuture-section section section-lg pb-5">
     <img src="<?php echo base_url();?>assets/front/img/background/p1.webp" alt="Pattern Image" class="img-fluid lazyload p1">
     <div class="container">

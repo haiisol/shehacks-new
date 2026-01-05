@@ -114,7 +114,7 @@ class Dashboard extends FrontController
 
         if ($param_pg == 'dashboard') {
             $query = $this->db->table('tb_user')
-                ->select('nama,email')
+                ->select('kategori_user')
                 ->where('id_user', $id_user)
                 ->get()
                 ->getRowArray();
@@ -652,16 +652,16 @@ class Dashboard extends FrontController
             ->get()
             ->getRowArray();
 
-        $builder = $this->db->table('edu_modul m');
-        $builder->select('m.id_modul, m.modul, m.cover, m.deskripsi_modul, m.date_create');
-        $builder->where('m.kategori', $get_user['kategori']);
-        $builder->where('m.status_delete', '0');
+        $builder = $this->db->table('edu_modul');
+        $builder->select('id_modul, modul, cover, deskripsi_modul, date_create');
+        $builder->where('kategori', $get_user['kategori']);
+        $builder->where('status_delete', '0');
 
         if ($search !== '') {
-            $builder->like('m.modul', $search);
+            $builder->like('modul', $search);
         }
 
-        $builder->orderBy('m.id_modul', 'ASC');
+        $builder->orderBy('id_modul', 'ASC');
         $builder->limit($limit, $start);
 
         return $builder->get();
@@ -702,7 +702,7 @@ class Dashboard extends FrontController
             $row['modul'] = $key['modul'];
             $row['deskripsi_modul'] = strip_tags($key['deskripsi_modul']);
             $row['date_create'] = $key['date_create'];
-            $row['cover'] = $this->mainModel->url_image($key['cover'], 'file-modul');
+            $row['cover'] = url_image($key['cover'], 'file-modul');
             $row['total_video'] = $get_video['total'];
 
             if ($cek_sertif) {

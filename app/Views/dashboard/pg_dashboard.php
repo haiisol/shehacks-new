@@ -1,7 +1,6 @@
 <div class="card card-style">
     <div class="card-body">
         <div class="banner-dashboard" id="load_data"></div>
-
         <?php if ($kategori_user) { ?>
             <div class="education-section">
                 <div class="section-title style-2" id="menu_hide">

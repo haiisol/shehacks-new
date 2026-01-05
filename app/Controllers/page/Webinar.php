@@ -3,7 +3,7 @@
 namespace App\Controllers\Page;
 
 use App\Controllers\FrontController;
-use Config\Services;
+use Config\Database;
 
 class Webinar extends FrontController
 {
@@ -52,7 +52,7 @@ class Webinar extends FrontController
                 $offsetEnd = $offset + $limit;
             }
 
-            $db = \Config\Database::connect();
+            $db = Database::connect();
 
             // ---------- MAIN DATA ----------
             $query = $db->table('tb_webinar')

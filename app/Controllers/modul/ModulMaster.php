@@ -28,9 +28,68 @@ class ModulMaster extends FrontController
             return redirect()->to('/');
         }
 
+        $id_user = key_auth();
+
+        // get video
+        $get_video = $this->db->table('edu_video')
+            ->where('id_modul', $id_modul)
+            ->where('status_delete', 0)
+            ->get()
+            ->getResultArray();
+
+        // get quiz
+        $get_quiz = $this->db->table('quiz')
+            ->where('id_modul', $id_modul)
+            ->where('status_delete', 0)
+            ->get()
+            ->getResultArray();
+
+        if (!empty($get_quiz)) {
+            $get_quiz_pre_posisi = $this->db->table('edu_modul_progress')
+                ->select('id')
+                ->where('id_modul', $id_modul)
+                ->where('id_user', $id_user)
+                ->where('quiz_pre', 1)
+                ->get()
+                ->getRowArray();
+
+            $get_quiz_post_posisi = $this->db->table('edu_modul_progress')
+                ->select('id')
+                ->where('id_modul', $id_modul)
+                ->where('id_user', $id_user)
+                ->where('quiz_post', 1)
+                ->get()
+                ->getRowArray();
+
+            $this->data['get_quiz_pre_posisi'] = $get_quiz_pre_posisi;
+            $this->data['get_quiz_post_posisi'] = $get_quiz_post_posisi;
+        }
+
+        if (!empty($get_video)) {
+            $progressVideos = $this->db->table('edu_modul_progress')
+                ->select('id_video')
+                ->where('id_modul', $id_modul)
+                ->where('id_user', $id_user)
+                ->where('id_video IS NOT NULL')
+                ->get()
+                ->getResultArray();
+
+            $completedVideoIds = array_column($progressVideos, 'id_video');
+
+            foreach ($get_video as $i => $video) {
+                $get_video[$i]['menu_active'] = in_array(
+                    $video['id_video'],
+                    $completedVideoIds
+                ) ? 'menu-active' : 'menu-nonactive';
+            }
+        }
+
         $data = [
+            'id_user' => $id_user,
             'id_modul' => $id_modul,
             'title' => ucwords($get_modul['modul']),
+            'videos' => $get_video,
+            'get_quiz' => $get_quiz,
             'description' => ucwords($get_modul['modul']),
             'page' => 'modul/master_modul'
         ];
@@ -147,7 +206,6 @@ class ModulMaster extends FrontController
                 'quiz_param' => $param
             ]
         ]);
-
     }
 
     function submit_quiz()
@@ -191,7 +249,6 @@ class ModulMaster extends FrontController
                 ->getRow('answer');
 
             $status_jawaban = ($answer == $id_jawaban) ? 'TRUE' : 'FALSE';
-
         } else {
             $jawaban = '';
             $status_jawaban = 'FALSE';
@@ -440,7 +497,6 @@ class ModulMaster extends FrontController
             if (empty($get_modul_progress)) {
                 $status = 0;
                 $param = 'PRE - TEST';
-
             } else {
                 $status = 1;
 
@@ -452,7 +508,6 @@ class ModulMaster extends FrontController
                         $param = 'VIDEO';
                         $id_param = $get_modul_progress['id_video'];
                         $i_post = $total_i_video;
-
                     } elseif ($get_modul_progress['id_quiz'] != 0) {
 
                         if ($get_modul_progress['quiz_pre'] != 0) {
@@ -465,7 +520,6 @@ class ModulMaster extends FrontController
                     }
                 }
             }
-
         } else {
 
             // Cek skor post-test
@@ -557,7 +611,6 @@ class ModulMaster extends FrontController
             'success' => 'success',
             'i_post' => $i_post
         ]);
-
     }
 
     function cek_data_modul()
@@ -662,7 +715,6 @@ class ModulMaster extends FrontController
                     'date_create' => $now
                 ]);
             }
-
         } else {
 
             $progress = $this->db->table('edu_modul_progress')

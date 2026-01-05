@@ -1,10 +1,3 @@
-<?php
-$id_user = key_auth();
-
-$get_video    = $this->db->query("SELECT v.* FROM edu_video v WHERE v.id_modul = ".$id_modul." AND v.status_delete = 0 ")->result_array();
-$get_quiz     = $this->db->query("SELECT q.* FROM quiz q WHERE q.id_modul = ".$id_modul." AND q.status_delete = 0 ")->result_array();
-?>
-
 <section class="learn-section section section-sm">
     <div class="container">
 
@@ -17,8 +10,6 @@ $get_quiz     = $this->db->query("SELECT q.* FROM quiz q WHERE q.id_modul = ".$i
                             <!-- pre test -->
                             <?php if ($get_quiz) { ?>
                                 <?php 
-                                    $get_quiz_pre_posisi = $this->db->query("SELECT id FROM edu_modul_progress WHERE id_modul = ".$id_modul." AND id_user = ".$id_user." AND quiz_pre = 1 ")->row_array(); 
-
                                     if(empty($get_quiz_pre_posisi)) { 
                                         $qpr_m_active = 'menu-nonactive';
                                     } else { 
@@ -39,26 +30,16 @@ $get_quiz     = $this->db->query("SELECT q.* FROM quiz q WHERE q.id_modul = ".$i
 
 
                             <!-- video -->
-                            <?php if ($get_video) { ?>
-                                <?php foreach ($get_video as $key_video) { ?>
-                                    <?php 
-                                        $get_video_posisi = $this->db->query("SELECT id FROM edu_modul_progress WHERE id_modul = ".$id_modul." AND id_video = ".$key_video['id_video']." AND id_user = ".$id_user." ")->row_array();
-                                    
-                                        if(empty($get_video_posisi)) { 
-                                            $vid_m_active = 'menu-nonactive';
-                                        } else { 
-                                            $vid_m_active = 'menu-active';
-                                        }
-                                    ?>
-
+                            <?php if (!empty($videos))  { ?>
+                                <?php foreach ($videos as $video) { ?>
                                     <li class="menu-items">
                                         <a href="javascript:void(0)" 
-                                            id="menu-vid-<?php echo $key_video['id_video']; ?>"
+                                            id="menu-vid-<?php echo $video['id_video']; ?>"
                                             data="<?php echo $id_modul; ?>" 
-                                            data_id="<?php echo $key_video['id_video']; ?>" 
-                                            class="video-trigg <?php echo $vid_m_active; ?>" >
+                                            data_id="<?php echo $video['id_video']; ?>" 
+                                            class="video-trigg <?php echo $video['menu_active']; ?>" >
                                             <span class="menu-icon"><i class="lni lni-video"></i></span>
-                                            <span class="menu-label"><?php echo $key_video['judul']; ?></span>
+                                            <span class="menu-label"><?php echo $video['judul']; ?></span>
                                         </a>
                                     </li>
                                 <?php } ?>
@@ -68,8 +49,6 @@ $get_quiz     = $this->db->query("SELECT q.* FROM quiz q WHERE q.id_modul = ".$i
                             <!-- post test -->
                             <?php if ($get_quiz) { ?>
                                 <?php
-                                    $get_quiz_post_posisi = $this->db->query("SELECT id FROM edu_modul_progress WHERE id_modul = ".$id_modul." AND id_user = ".$id_user." AND quiz_post = 1 ")->row_array();
-
                                     if(empty($get_quiz_post_posisi)) { 
                                         $qpo_m_active = 'menu-nonactive';
                                     } else { 

@@ -1,16 +1,3 @@
-<?php 
-    $web = $this->main_model->get_admin_web(); 
-    $logged_in_front = $this->session->userdata('logged_in_front');
-    
-    if ($web['logo']) {
-        $logo = $this->main_model->url_image($web['logo'], 'image-logo');
-    }
-
-    if ($web['logo_sponsor']) {
-        $logo_sponsor = $this->main_model->url_image($web['logo_sponsor'], 'image-logo');
-    }
-?>
-
 <section class="coming-soon-section section section-sm">
 	<div class="container">
         <img src="<?php echo base_url();?>assets/front/img/background/p2.webp" alt="Cover" width="660" height="660" class="img-fluid lazyload cover c1">
@@ -18,10 +5,10 @@
 
         <div class="inner">
             <div class="brand-area">
-                <?php if ($web['logo']) { ?>
-                    <img src="<?php echo $logo; ?>" alt="<?php echo $web['name']; ?>" width="180" height="50" class="img-fluid lazyload brand-img mt-2">
+                <?php if ($logo) { ?>
+                    <img src="<?php echo $logo; ?>" alt="<?php echo $site_name; ?>" width="180" height="50" class="img-fluid lazyload brand-img mt-2">
                 <?php } ?>
-                <?php if ($web['logo_sponsor']) { ?>
+                <?php if ($logo_sponsor) { ?>
                     <img src="<?php echo $logo_sponsor; ?>" alt="Logo Sponsor" width="180" height="50" class="img-fluid lazyload brand-img">
                 <?php } ?>
             </div>
