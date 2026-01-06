@@ -760,7 +760,7 @@ class Dashboard extends FrontController
 
                 $get_id_user = key_auth();
                 $data_user = $this->userModel->getUserName($get_id_user);
-                $nama = strtoupper($data_user->nama);
+                $nama = strtoupper($data_user['nama']);
                 $nama_modul = word_wrap(strtoupper($modul['modul']), 65);
 
                 $text_modul = 'Telah menyelesaikan modul "' . $modul['modul'] . '"';
@@ -811,7 +811,7 @@ class Dashboard extends FrontController
 
                 header("Content-type: image/jpeg");
                 imagejpeg($image);
-                imagedestroy($image);
+                // imagedestroy($image);
 
             } else {
                 return redirect()->to('/');
