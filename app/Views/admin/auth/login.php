@@ -1,13 +1,10 @@
-<?php   
-    $web   = $this->main_model->get_admin_web();
-?>
 <div class="row g-0 m-0 auth-section">
     <div class="col-xl-6 col-lg-12">
         <div class="login-cover-wrapper">
             <div class="card shadow-none">
                 <div class="card-body">
                     <div class="text-center mb-4">
-                        <img src="<?php echo $this->main_model->url_image($web['logo'], 'image-logo'); ?>" alt="" class="logo-auth img-fluid d-xl-none d-block brand-img">
+                        <img src="<?php echo $logo; ?>" alt="" class="logo-auth img-fluid d-xl-none d-block brand-img">
 
                         <h4>Sign In</h4>
                         <p>Sign In to your account</p>

@@ -1,7 +1,6 @@
 <?php
 namespace App\Controllers\Auth;
 
-use Config\Database;
 use Config\Services;
 use App\Controllers\FrontController;
 
@@ -12,7 +11,7 @@ class RegisterVoting extends FrontController
 
     public function __construct()
     {
-        $this->db = Database::connect();
+        $this->db = db_connect();
         $this->session = Services::session();
     }
 

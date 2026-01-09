@@ -3,8 +3,6 @@
 namespace App\Controllers\Startups;
 
 use App\Controllers\BaseController;
-use Config\Database;
-use Config\Services;
 use CodeIgniter\API\ResponseTrait;
 
 class StartupsData extends BaseController
@@ -15,7 +13,7 @@ class StartupsData extends BaseController
 
     public function __construct()
     {
-        $this->db = Database::connect();
+        $this->db = db_connect();
     }
 
     private function _sql($param)

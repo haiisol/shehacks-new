@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
-use Config\Database;
 use Config\Services;
 
 class MainModel extends Model
@@ -15,16 +14,8 @@ class MainModel extends Model
     public function __construct()
     {
         parent::__construct();
-        $this->db = Database::connect();
+        $this->db = db_connect();
         $this->session = session();
-    }
-
-    function logged_in_admin()
-    {
-        if ($this->session->get('logged_in_admin') == FALSE) {
-            $this->session->setFlashdata('flash-warning-message', 'Silahkan login terlebih dahulu.');
-            redirect('panel', 'refresh');
-        }
     }
 
     function get_admin()
@@ -34,23 +25,6 @@ class MainModel extends Model
         return $this->db->table('tb_admin_user')
             ->where('id_admin', $id_admin)
             ->get()->getRowArray();
-    }
-
-    function check_access($param)
-    {
-        $get_user = $this->get_admin();
-
-        $get_data_akses = $this->get_query_menu($param, $get_user['id_role']);
-
-        if ($get_data_akses) {
-            if ($get_data_akses['view_data'] == 1) {
-                $response['access_add'] = ($get_data_akses['create_data'] == 0) ? 'd-none' : '';
-                $response['access_delete'] = ($get_data_akses['delete_data'] == 0) ? 'd-none' : '';
-                return $response;
-            }
-        }
-
-        redirect('404');
     }
 
     function check_access_action($param)
@@ -98,6 +72,32 @@ class MainModel extends Model
             ->where('p.id_role', $id_role)
             ->where('m.kode_menu', $kode_menu)
             ->get()->getRowArray();
+    }
+
+    public function getRolePrivileges(int $roleId)
+    {
+        return $this->db->table('tb_admin_user_privilage p')
+            ->select('m.kode_menu, p.view_data, p.create_data, p.edit_data, p.delete_data')
+            ->join('tb_admin_user_menu m', 'p.id_menu = m.id_menu')
+            ->where('p.id_role', $roleId)
+            ->get()
+            ->getResultArray();
+    }
+
+    public function mapPrivileges(array $rows)
+    {
+        $map = [];
+
+        foreach ($rows as $row) {
+            $map[$row['kode_menu']] = [
+                'view'   => (bool) $row['view_data'],
+                'create' => (bool) $row['create_data'],
+                'edit'   => (bool) $row['edit_data'],
+                'delete' => (bool) $row['delete_data'],
+            ];
+        }
+
+        return $map;
     }
 
     function get_data_row_array($table, $data)
@@ -165,19 +165,6 @@ class MainModel extends Model
         $row = $this->db->query("SELECT MAX(RIGHT($column,3)) as sta FROM $table")->getRow();
         $id = ($row && $row->sta) ? sprintf("%03s", (int) $row->sta + 1) : "001";
         return $part . $id;
-    }
-
-    function initial_value($value)
-    {
-        $exp_val = explode(' ', $value);
-
-        $initial = '';
-
-        foreach ($exp_val as $key) {
-            $initial .= $key[0];
-        }
-
-        return $initial;
     }
 
     function get_admin_web()

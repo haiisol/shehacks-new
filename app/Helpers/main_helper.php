@@ -2,7 +2,6 @@
 ini_set('date.timezone', 'Asia/Jakarta');
 
 use Config\Services;
-use Config\Database;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -489,7 +488,7 @@ function _clear_session()
 
 function fa_handle($id_user, $uri_string = "")
 {
-    $db = Database::connect();
+    $db = db_connect();
     $generate_code = rand(100000, 999999);
 
     $data2fa = [
@@ -521,7 +520,7 @@ function fa_handle($id_user, $uri_string = "")
 
 function send_email($data)
 {
-    $db = Database::connect();
+    $db = db_connect();
     $getKonf = $db->table('tb_admin_konf_email')
         ->where('id', 1)
         ->get()
@@ -556,8 +555,20 @@ function send_email($data)
 
         $mail->MsgHTML(stripslashes($message));
         $mail->send();
-
     } catch (Exception $e) {
         log_message('error', 'Email failed: ' . $mail->ErrorInfo);
     }
+}
+
+function initial_value($value)
+{
+    $exp_val = explode(' ', $value);
+
+    $initial = '';
+
+    foreach ($exp_val as $key) {
+        $initial .= $key[0];
+    }
+
+    return $initial;
 }

@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Controllers;
-use Config\Database;
 
 class Analytic extends BaseController
 {
@@ -9,7 +8,7 @@ class Analytic extends BaseController
 
     public function __construct()
     {
-        $this->db = Database::connect();
+        $this->db = db_connect();
     }
 
     public function post_visitors()

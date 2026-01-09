@@ -59,16 +59,34 @@ $routes->group('dashboard', ['filter' => 'frontauth'], function ($routes) {
 
 
 // ================= Admin / Panel =================
-$routes->get('panel', 'admin\auth\Login::index');
-$routes->get('panel-dashboard', 'admin\dashboard\Dashboard::index');
+$routes->get('panel', 'Admin\Auth\Login::index');
 
-$routes->post('panel/auth-verify', 'admin\auth\Login::login_verify');
+$routes->get('panel/auth-verify', 'Admin\Auth\Login::login_verify');
+$routes->post('admin/auth/login/post_login', 'Admin\Auth\Login::post_login');
+$routes->post('admin/auth/login/post_login_verify', 'Admin\Auth\Login::post_login_verify');
 
-$routes->get('login-admin', 'admin\auth\Login::index');
-$routes->get('logout-admin', 'admin\auth\Login::logout');
+$routes->get('login-admin', 'Admin\Auth\Login::index');
+$routes->get('logout-admin', 'Admin\Auth\Login::logout');
+
+$routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
+    $routes->get('dashboard/dashboard/data_info', 'Admin\Dashboard\Dashboard::data_info');
+    $routes->get('dashboard/dashboard/load_data_kategori', 'Admin\Dashboard\Dashboard::load_data_kategori');
+    $routes->get('dashboard/dashboard/load_data_channel', 'Admin\Dashboard\Dashboard::load_data_channel');
+    $routes->get('dashboard/dashboard/load_data_tingkat_pendidikan', 'Admin\Dashboard\Dashboard::load_data_tingkat_pendidikan');
+    $routes->get('dashboard/dashboard/load_data_tingkat_pendidikan', 'Admin\Dashboard\Dashboard::load_data_tingkat_pendidikan');
+    $routes->get('dashboard/dashboard/load_data_provinsi', 'Admin\Dashboard\Dashboard::load_data_provinsi');
+    $routes->get('dashboard/dashboard/load_data_dapat_informasi', 'Admin\Dashboard\Dashboard::load_data_dapat_informasi');
+    
+    $routes->post('dashboard/dashboard/get_address', 'Admin\Dashboard\Dashboard::get_address');
+     
+});
+
+$routes->group('', ['filter' => 'adminauth'], function ($routes) {
+    $routes->get('panel-dashboard', 'Admin\Dashboard\Dashboard::index', ['filter' => 'access:dashboard']);
+});
 
 // Blog Tulis
-$routes->get('admin/blogs/(:any)/(:any)', 'admin\blog\Blog::tulis/$1/$2');
+$routes->get('admin/blogs/(:any)/(:any)', 'Admin\Blog\Blog::tulis/$1/$2');
 
 // Modul
 $routes->group('', ['filter' => 'frontauth'], function ($routes) {

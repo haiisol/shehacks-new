@@ -53,7 +53,7 @@ class FrontController extends BaseController
         $this->data['favicon_banner'] = $banner;
         $this->data['logo']           = url_image($web['logo'], 'image-logo');
         $this->data['logo_sponsor']   = url_image($web['logo_sponsor'], 'image-logo');
-        $this->data['favicon_og']     = $this->data['favicon_banner'] ? $this->data['favicon_banner'] : $this->data['favicon_img'];
+        $this->data['favicon_og']     = $this->data['favicon_banner'] ?? $this->data['favicon_img'];
         $this->data['title']          = $web['name'] . ' - ' . $web['meta_description'];
         $this->data['description']    = $web['meta_description'];
         $this->data['keywords']       = $web['meta_keywords'];
@@ -61,9 +61,9 @@ class FrontController extends BaseController
         $this->data['register_button'] = filter_var($web['register_button'], FILTER_VALIDATE_BOOLEAN);
         $this->data['voting_running'] = filter_var($web['voting_running'], FILTER_VALIDATE_BOOLEAN);
         $this->data['under_construction'] = filter_var($web['under_construction'], FILTER_VALIDATE_BOOLEAN);
-        $this->data['instagram'] = $web['instagram'] || '';
-        $this->data['facebook'] = $web['facebook'] || '';
-        $this->data['youtube'] = $web['youtube'] || '';
-        $this->data['twitter'] = $web['twitter'] || '';
+        $this->data['instagram'] = $web['instagram'] ?? '';
+        $this->data['facebook'] = $web['facebook'] ?? '';
+        $this->data['youtube'] = $web['youtube'] ?? '';
+        $this->data['twitter'] = $web['twitter'] ?? '';
     }
 }

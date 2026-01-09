@@ -2,11 +2,10 @@
 
 namespace App\Filters;
 
+use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
-use CodeIgniter\Filters\FilterInterface;
 use Config\Services;
-use Config\Database;
 
 class FrontAuthFilter implements FilterInterface
 {
@@ -21,7 +20,7 @@ class FrontAuthFilter implements FilterInterface
         $id_user = key_auth();
         $key_token = $session->get('key_token');
 
-        $db = Database::connect();
+        $db = db_connect();
 
         $cek = $db->table('tb_user_2fa')
             ->select('logout_status')
@@ -38,7 +37,5 @@ class FrontAuthFilter implements FilterInterface
         }
     }
 
-    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
-    {
-    }
+    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null) {}
 }

@@ -3,7 +3,6 @@
 namespace App\Controllers\Auth;
 
 use App\Controllers\FrontController;
-use Config\Database;
 use Throwable;
 
 class Login extends FrontController
@@ -14,7 +13,7 @@ class Login extends FrontController
     function __construct()
     {
         $this->session = session();
-        $this->db = Database::connect();
+        $this->db = db_connect();
     }
 
     public function index()

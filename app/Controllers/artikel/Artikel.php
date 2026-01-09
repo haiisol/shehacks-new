@@ -3,7 +3,6 @@
 namespace App\Controllers\Artikel;
 
 use App\Controllers\FrontController;
-use Config\Database;
 
 class Artikel extends FrontController
 {
@@ -11,7 +10,7 @@ class Artikel extends FrontController
 
     public function __construct()
     {
-        $this->db = Database::connect();
+        $this->db = db_connect();
     }
 
     public function index()

@@ -2,43 +2,26 @@
 <html>
 
 <head>
-    <?php   
-    $web   = $this->main_model->get_admin_web();
-    $admin = $this->main_model->get_admin_user(); 
-
-    if ($title != '') {
-        $title = strip_tags($title); 
-    } else {
-        $title = strip_tags($web['name']);
-    }
-
-    if ($description != '') {
-        $description = strip_tags($description); 
-    } else {
-        $description = strip_tags($web['meta_description']);
-    }
-
-    if ($keywords != '') {
-        $keywords = strip_tags($keywords); 
-    } else {
-        $keywords = strip_tags($web['meta_keywords']);
-    }
+    <?php
+    $meta_title = strip_tags($title);
+    $meta_description = strip_tags($description);
+    $meta_keywords = strip_tags($keywords);
     ?>
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title><?php echo $title; ?> | <?php echo $description; ?></title>
-    <meta name="description" content="<?php echo $description; ?>">
-    <meta name="keywords" content="<?php echo $keywords; ?>">
+    <title><?php echo $meta_title; ?> | <?php echo $meta_description; ?></title>
+    <meta name="description" content="<?php echo $meta_description; ?>">
+    <meta name="keywords" content="<?php echo $meta_keywords; ?>">
     <meta name="author" content="CV Bantu Teknologi Indonesia">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="<?php echo $web['name']; ?>">
-    <link rel="apple-touch-icon" href="<?php echo $this->main_model->url_image($web['favicon'], 'image-logo'); ?>">
-    <link rel="shortcut icon" href="<?php echo $this->main_model->url_image($web['favicon'], 'image-logo'); ?>">
+    <meta name="apple-mobile-web-app-title" content="<?php echo $site_name; ?>">
+    <link rel="apple-touch-icon" href="<?php echo $favicon_img; ?>">
+    <link rel="shortcut icon" href="<?php echo $favicon_img; ?>">
 
     <!-- icon -->
     <link href="<?php echo base_url();?>assets/backoffice/css/icons.css" rel="stylesheet">
@@ -96,10 +79,10 @@
 
 <body>
     <div class="wrapper">
-        <?php $this->load->view('admin/component/csrf_handle'); ?>
+        <?php echo view('admin/component/csrf_handle'); ?>
 
         <?php if ($page == 'admin/auth/login_verify' OR $page == 'admin/auth/login' OR $page == 'admin/report/invoice' OR $page == 'privacy_policy') { ?>
-            <?php $this->load->view($page); ?>
+            <?php echo view($page); ?>
         <?php } else { ?>
 
             <!-- navigation -->
@@ -109,10 +92,10 @@
                 <div class="page-content">
 
                     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-                        <div class="breadcrumb-title pe-3"><?php echo $title; ?></div>
+                        <div class="breadcrumb-title pe-3"><?php echo $meta_title; ?></div>
                     </div>
 
-                    <?php $this->load->view($page); ?>
+                    <?php echo view($page); ?>
                 </div>
             </div>
 

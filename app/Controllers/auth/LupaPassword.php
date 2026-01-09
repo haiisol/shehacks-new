@@ -3,7 +3,6 @@
 namespace App\Controllers\Auth;
 
 use App\Controllers\FrontController;
-use Config\Database;
 
 class LupaPassword extends FrontController
 {
@@ -13,7 +12,7 @@ class LupaPassword extends FrontController
 
     public function __construct()
     {
-        $this->db = Database::connect();
+        $this->db = db_connect();
         $this->session = session();
     }
 

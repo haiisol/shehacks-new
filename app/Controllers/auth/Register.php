@@ -2,7 +2,6 @@
 namespace App\Controllers\Auth;
 
 use Config\Services;
-use Config\Database;
 use App\Controllers\FrontController;
 
 class Register extends FrontController
@@ -12,7 +11,7 @@ class Register extends FrontController
 
     public function __construct()
     {
-        $this->db = Database::connect();
+        $this->db = db_connect();
         $this->session = session();
     }
 

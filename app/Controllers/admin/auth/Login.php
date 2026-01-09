@@ -1,228 +1,249 @@
-<?php defined('BASEPATH') OR exit('No direct script access allowed');
+<?php
 
-class Login extends CI_Controller {
+namespace App\Controllers\Admin\Auth;
 
-    public function __construct() {
-        parent::__construct();
+use App\Controllers\AdminController;
+use Config\Services;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+class Login extends AdminController
+{
+    protected $db;
+    protected $validation;
+
+    public function __construct()
+    {
+        $this->db         = db_connect();
+        $this->validation = Services::validation();
     }
-
 
     public function index()
     {
-        if($this->session->userdata('logged_in_admin') == TRUE) {
-            redirect('admin/dashboard/dashboard');
-        } 
-        else {
-            $data['title']       = 'Login';
-            $data['description'] = '';
-            $data['keywords']    = '';
-            $data['page']        = 'admin/auth/login';
-            $this->load->view('admin/index', $data);
+        if (session()->get('logged_in_admin') === true) {
+            return redirect()->to(base_url('admin/dashboard/dashboard'));
         }
+
+        $data = [
+            'title' => 'Login',
+            'page' => 'admin/auth/login',
+        ];
+
+        $this->data = array_merge($this->data, $data);
+
+        return view('admin/index', $this->data);
     }
 
-    function login_verify() 
-    {   
-        if($this->session->userdata('2fa_id_admin') == FALSE) {
-            redirect('panel');
-        } 
-        else {
-            $data['title']       = '2FA Verify';
-            $data['description'] = '';
-            $data['keywords']    = '';
-            $data['page']        = 'admin/auth/login_verify';
-            $this->load->view('admin/index', $data);
+    function login_verify()
+    {
+        if (!session()->get('2fa_id_admin')) {
+            return redirect()->to(base_url('panel'));
         }
+
+        $data = [
+            'title' => '2FA Verify',
+            'page' => 'admin/auth/login_verify',
+        ];
+
+        $this->data = array_merge($this->data, $data);
+
+        return view('admin/index', $this->data);
     }
 
     function post_login()
-    {   
-        $row = array(
-            "email_admin"        => $this->input->post('email_admin', TRUE),
-            "password_admin"     => $this->input->post('password_admin', TRUE),
-        ); 
+    {
+        $data = [
+            'email_admin'    => $this->request->getPost('email_admin'),
+            'password_admin' => $this->request->getPost('password_admin'),
+        ];
 
-        $this->form_validation->set_data($row);
-        $this->form_validation->set_rules('email_admin', 'email_admin', 'trim|required|valid_email');
-        $this->form_validation->set_rules('password_admin', 'password_admin', 'trim|required');
+        $this->validation->setRules([
+            'email_admin'    => 'required|valid_email',
+            'password_admin' => 'required'
+        ]);
 
-        if ( $this->form_validation->run() === false ) {
-            $response['status']  = 0;
-            $response['message'] = validation_errors();
-            json_response($response);
-            return;
+        if (!$this->validation->run($data)) {
+            return json_response([
+                'status'  => 0,
+                'message' => $this->validation->listErrors()
+            ]);
         }
 
-        $email    = $this->input->post('email_admin', TRUE);
-        $password = md5($this->input->post('password_admin', TRUE));
+        $email    = $data['email_admin'];
+        $password = md5($data['password_admin']);
 
-        $this->db->select('*');
-        $this->db->where('email_admin', $email, TRUE);
-        $query   = $this->db->get('tb_admin_user')->row_array();
+        $user = $this->db->table('tb_admin_user')
+            ->where('email_admin', $email)
+            ->get()
+            ->getRowArray();
 
-        if($query)
-        {
-           if($password == $query['password_admin']) {
-
-                $this->fa_handle($query);
-                
-                $response['status']   = 1;
-                $response['message']  = 'Success, Login Akun';
-                $response['redirect'] = base_url().'panel/auth-verify';
-            }
-            else
-            {
-                $response['status']  = 0;
-                $response['message'] = 'Email Pengguna atau Kata Sandi salah.';
-            } 
-        }
-        else
-        {
-            $response['status']  = 0;
-            $response['message'] = 'Email Pengguna atau Kata Sandi salah.';
+        if (!$user || $password !== $user['password_admin']) {
+            return json_response([
+                'status'  => 0,
+                'message' => 'Email Pengguna atau Kata Sandi salah.'
+            ]);
         }
 
-        json_response($response);
+        $this->fa_handle($user);
+
+        return json_response([
+            'status'   => 1,
+            'message'  => 'Success, Login Akun',
+            'redirect' => base_url('panel/auth-verify')
+        ]);
     }
 
-    function fa_handle($data) 
+    function fa_handle($data)
     {
         $generate_code = rand(100000, 999999);
 
-        $dataInsert2fa['id_user']      = $data['id_admin'];
-        $dataInsert2fa['code']         = $generate_code;
-        $dataInsert2fa['access_policy']= 'CMS';
-        $dataInsert2fa['code_encrypt'] = encrypt_url($generate_code);
-        $dataInsert2fa['date_create']  = date_create('now', timezone_open('Asia/Jakarta'))->format('Y-m-d H:i:s');
-        $dataInsert2fa['date_expired'] = date_create('now', timezone_open('Asia/Jakarta'))->modify('+10 minutes')->format('Y-m-d H:i:s');
-        $this->db->insert('tb_user_2fa', $dataInsert2fa);
+        $data2fa = [
+            'id_user' => $data['id_admin'],
+            'code' => $generate_code,
+            'access_policy' => 'CMS',
+            'code_encrypt' => encrypt_url($generate_code),
+            'date_create' => date('Y-m-d H:i:s'),
+            'date_expired' => date('Y-m-d H:i:s', strtotime('+10 minutes'))
+        ];
 
-        $data_email['id_user']         = $data['id_admin'];
-        $data_email['code']            = $generate_code;
+        $builder = $this->db->table('tb_user_2fa');
 
-        $this->send_email($data_email);
+        if (!$builder->insert($data2fa)) {
+            return false;
+        }
 
-        $this->session->set_userdata('2fa_id_admin', encrypt_url($data['id_admin']));
+        $dataEmail = [
+            'code' => $generate_code,
+            'email' => $data['email_admin'],
+            'param' => 'Login',
+        ];
+
+        $subject = $generate_code . " - Kode akses login akun SheHacks";
+        $message = view('email/2fa_email_login', $dataEmail);
+
+        $emailData = [
+            'subject' => $subject,
+            'message' => $message,
+            'email' => $data['email_admin'],
+        ];
+
+        $this->send_email($emailData);
+
+        session()->set('2fa_id_admin', encrypt_url($data['id_admin']));
     }
 
     function post_login_verify()
-    {   
-        $row = array(
-            "kode"        => $this->input->post('kode', TRUE),
-        ); 
-
-        $this->form_validation->set_data($row);
-        $this->form_validation->set_rules('kode', 'kode', 'trim|required|numeric');
-
-        if ( $this->form_validation->run() === false ) {
-            $response['status']  = 0;
-            $response['message'] = validation_errors();
-            json_response($response);
-            return;
-        }
-
-        $date_now       = date_create('now', timezone_open('Asia/Jakarta'))->format('Y-m-d H:i:s');
-        $kode           = $this->input->post('kode', TRUE);
-        $sess_2fa_id    = decrypt_url($this->session->userdata('2fa_id_admin'));
-
-        if ($sess_2fa_id) {
-
-            $this->db->select('id, id_user, code_encrypt, date_expired');
-            $this->db->where('id_user', $sess_2fa_id, TRUE);
-            $this->db->where('code', $kode, TRUE);
-            $this->db->where('access_policy', 'CMS');
-            $get_user2fa = $this->db->get('tb_user_2fa')->row_array();
-
-            if ($get_user2fa) {
-
-                if (strtotime($get_user2fa['date_expired']) > strtotime($date_now)) {
-
-                    $session['key_auth_admin']        = encrypt_url($get_user2fa['id_user']);
-                    $session['key_token_admin']       = $get_user2fa['code_encrypt'];
-                    $session['logged_in_admin']       = TRUE;
-
-                    $this->session->set_userdata($session);
-
-                    // update last login
-                    $data_update['terakhir_login_admin'] = date_create('now', timezone_open('Asia/Jakarta'))->format('Y-m-d H:i:s');
-                    $this->main_model->update_data('tb_admin_user', $data_update, 'id_admin', $get_user2fa['id_user']);
-
-                    // update 2FA
-                    $data_update_2fa['date_verification'] = date_create('now', timezone_open('Asia/Jakarta'))->format('Y-m-d H:i:s');
-                    $this->main_model->update_data('tb_user_2fa', $data_update_2fa, 'id', $get_user2fa['id']);
-
-                    $this->session->unset_userdata('2fa_id_admin');
-
-                    $redirect               = base_url().'panel-dashboard';
-                    $response['status']     = 1;
-                    $response['message']    = 'Success';
-                    $response['redirect']   = $redirect;
-                }
-                else {
-                    $response['status']     = 0;
-                    $response['message']    = 'Failed, session is expired.';        
-                    $response['test']       = $get_user2fa['date_expired'].' | '.$date_now;
-                }
-            }
-            else {
-                $response['status']   = 0;
-                $response['message']  = 'Failed, code not match.';   
-            }
-        }
-        else {
-            $response['status']   = 0;
-            $response['message']  = 'Failed, session not found.';
-        }
-
-        json_response($response);
-    }
-
-    function send_email($data) 
     {
-        require_once(APPPATH.'third_party/phpmailer/PHPMailerAutoload.php');
+        $this->validation->setRules([
+            'kode' => 'required|numeric'
+        ]);
 
-        $get_user = $this->db->query("
-            SELECT email_admin
-            FROM tb_admin_user 
-            WHERE id_admin = '".$data['id_user']."' 
-            ")->row_array();
+        if (!$this->validation->run($this->request->getPost())) {
+            return json_response([
+                'status'  => 0,
+                'message' => $this->validation->listErrors()
+            ]);
+        }
 
-       
-        $data_email['code']          = $data['code'];
-        $data_email['email']         = $get_user['email_admin'];
-        $data_email['param']         = 'Login';
+        $kode   = $this->request->getPost('kode');
+        $userId = decrypt_url(session()->get('2fa_id_admin'));
 
-        $message  = $this->load->view('email/2fa_email_login', $data_email, TRUE);
-        $get_konf = $this->db->query("SELECT * FROM tb_admin_konf_email WHERE id = 1 ")->row_array();
+        $now    = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
 
-        $mail = new PHPMailer;
-        $mail->isSMTP();
-        $mail->Host       = $get_konf['host'];
-        $mail->SMTPAuth   = $get_konf['smtpauth'];
-        $mail->Username   = $get_konf['email'];
-        $mail->Password   = $get_konf['password'];
-        $mail->SMTPSecure = $get_konf['smtpsecure'];
-        $mail->Port       = $get_konf['port'];
-        $mail->Subject    = $data['code']." - Kode akses login akun SheHacks";
-        $mail->setFrom($get_konf['email'], $get_konf['setfrom']);
-        $mail->addAddress($data_email['email']);
-        $mail->isHTML(true);
-        //$mail->AddEmbeddedImage(FCPATH.'assets/front/img/Image-registrasi-2024.png', 'logo_email');
-        $mail->MsgHTML(stripslashes($message));
-        $mail->send();
-        
+        if (!$userId) {
+            return json_response([
+                'status'  => 0,
+                'message' => 'Failed, session not found.'
+            ]);
+        }
+
+        $row = $this->db->table('tb_user_2fa')
+            ->where([
+                'id_user'       => $userId,
+                'code'          => $kode,
+                'access_policy' => 'CMS'
+            ])
+            ->get()
+            ->getRowArray();
+
+        if (!$row) {
+            return json_response([
+                'status'  => 0,
+                'message' => 'Failed, code not match.'
+            ]);
+        }
+
+        if (strtotime($row['date_expired']) < $now->getTimestamp()) {
+            return json_response([
+                'status'  => 0,
+                'message' => 'Failed, session is expired.'
+            ]);
+        }
+
+        session()->set([
+            'key_auth_admin'  => encrypt_url($row['id_user']),
+            'key_token_admin' => $row['code_encrypt'],
+            'logged_in_admin' => true
+        ]);
+
+        $this->db->table('tb_admin_user')
+            ->where('id_admin', $row['id_user'])
+            ->update([
+                'terakhir_login_admin' => $now->format('Y-m-d H:i:s')
+            ]);
+
+        $this->db->table('tb_user_2fa')
+            ->where('id', $row['id'])
+            ->update([
+                'date_verification' => $now->format('Y-m-d H:i:s')
+            ]);
+
+        session()->remove('2fa_id_admin');
+
+        return json_response([
+            'status'   => 1,
+            'message'  => 'Success',
+            'redirect' => base_url('panel-dashboard')
+        ]);
     }
 
-	function logout()
-    {   
-        $this->session->unset_userdata('id_admin');
-        $this->session->unset_userdata('key_auth_admin');
-        $this->session->unset_userdata('key_token_admin');
-        $this->session->unset_userdata('logged_in_admin');
-        $this->session->sess_destroy();
+    function send_email($data)
+    {
+        $getKonf = $this->db->table('tb_admin_konf_email')
+            ->where('id', 1)
+            ->get()
+            ->getRowArray();
 
-        redirect('panel');
+        $email = $data['email'];
+        $subject = $data['subject'];
+        $message = $data['message'];
+
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host = $getKonf['host'];
+            $mail->SMTPAuth = (bool) $getKonf['smtpauth'];
+            $mail->Username = $getKonf['email'];
+            $mail->Password = $getKonf['password'];
+            $mail->SMTPSecure = $getKonf['smtpsecure'];
+            $mail->Port = $getKonf['port'];
+
+            $mail->setFrom($getKonf['email'], $getKonf['setfrom']);
+            $mail->addAddress($email);
+
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->MsgHTML(stripslashes($message));
+            $mail->send();
+        } catch (Exception $e) {
+            log_message('error', 'Email failed: ' . $mail->ErrorInfo);
+        }
     }
 
+    function logout()
+    {
+        session()->destroy();
+        return redirect()->to(base_url('panel'));
+    }
 }
-

@@ -13,6 +13,8 @@ use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\FrontAuthFilter;
+use App\Filters\AdminAuthFilter;
+use App\Filters\AccessFilter;
 
 class Filters extends BaseFilters
 {
@@ -36,6 +38,8 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'frontauth'     => FrontAuthFilter::class,
+        'adminauth'     => AdminAuthFilter::class,
+        'access'        => AccessFilter::class
     ];
 
     /**
@@ -87,7 +91,7 @@ class Filters extends BaseFilters
                     // 'auth/register/post_register_personal',
                     // 'auth/register/post_register_startup',
                     // 'admin/auth/login/post_login_verify',
-                    'analytic/post_cta_btn',
+                    // 'analytic/post_cta_btn',
                 ]
             ],
         ],

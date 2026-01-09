@@ -2,7 +2,6 @@
 namespace App\Controllers\Artikel;
 
 use App\Controllers\BaseController;
-use Config\Database;
 
 class ArtikelData extends BaseController
 {
@@ -10,7 +9,7 @@ class ArtikelData extends BaseController
 
     public function __construct()
     {
-        $this->db = Database::connect();
+        $this->db = db_connect();
     }
 
     protected function _sql(string $param)

@@ -2,7 +2,6 @@
 namespace App\Controllers\Dashboard;
 
 use App\Controllers\FrontController;
-use Config\Database;
 use Config\Services;
 use DateTime;
 
@@ -13,7 +12,7 @@ class Dashboard extends FrontController
 
     public function __construct()
     {
-        $this->db = Database::connect();
+        $this->db = db_connect();
         $this->session = session();
     }
 
@@ -808,10 +807,11 @@ class Dashboard extends FrontController
                 imagettftext($image, $font_size_lg, 0, 715, 720, $color_black, $font_bold, $nama);
                 imagettftext($image, $font_size_md, 0, 715, 805, $color_black, $font_medium, $text_modul);
                 imagettftext($image, $font_size_md, 0, 715, 855, $color_black, $font_medium, $text_modul_2);
-
+                
+                ob_clean();
                 header("Content-type: image/jpeg");
                 imagejpeg($image);
-                // imagedestroy($image);
+                exit;
 
             } else {
                 return redirect()->to('/');

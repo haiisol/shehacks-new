@@ -2,7 +2,6 @@
 
 namespace App\Controllers\Modul;
 
-use Config\Database;
 use App\Controllers\FrontController;
 
 class ModulMaster extends FrontController
@@ -11,7 +10,7 @@ class ModulMaster extends FrontController
 
     public function __construct()
     {
-        $this->db = Database::connect();
+        $this->db = db_connect();
     }
 
     public function pelajari($slug, $id_modul_enc)

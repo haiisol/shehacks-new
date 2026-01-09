@@ -3,7 +3,6 @@
 namespace App\Controllers\Page;
 
 use App\Controllers\FrontController;
-use Config\Database;
 use App\Models\ContentModel;
 
 class PrivacyPolicy extends FrontController
@@ -12,7 +11,7 @@ class PrivacyPolicy extends FrontController
 
     public function __construct()
     {
-        $this->db = Database::connect();
+        $this->db = db_connect();
     }
 
     public function index()

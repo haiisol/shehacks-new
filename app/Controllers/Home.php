@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use Config\Database;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Config\Services;
@@ -15,7 +14,7 @@ class Home extends FrontController
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
         parent::initController($request, $response, $logger);
-        $this->db = Database::connect();
+        $this->db = db_connect();
     }
 
     public function index()
