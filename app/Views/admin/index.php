@@ -86,7 +86,7 @@
         <?php } else { ?>
 
             <!-- navigation -->
-            <?php include 'component/navigation.php'; ?>
+            <?php echo view('admin/component/navigation'); ?>
             
             <div class="page-content-wrapper">
                 <div class="page-content">

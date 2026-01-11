@@ -76,6 +76,16 @@ $routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
     $routes->get('dashboard/dashboard/load_data_tingkat_pendidikan', 'Admin\Dashboard\Dashboard::load_data_tingkat_pendidikan');
     $routes->get('dashboard/dashboard/load_data_provinsi', 'Admin\Dashboard\Dashboard::load_data_provinsi');
     $routes->get('dashboard/dashboard/load_data_dapat_informasi', 'Admin\Dashboard\Dashboard::load_data_dapat_informasi');
+  
+    $routes->get('webinar/webinar', 'Admin\Webinar\Webinar::index');
+    $routes->get('webinar/webinar/datatables', 'Admin\Webinar\Webinar::datatables');
+    
+    $routes->post('webinar/webinar/cek_value', 'Admin\Webinar\Webinar::cek_value');
+    $routes->post('webinar/webinar/get_data', 'Admin\Webinar\Webinar::get_data');
+    $routes->post('webinar/webinar/detail_data', 'Admin\Webinar\Webinar::detail_data');
+    $routes->post('webinar/webinar/add_data', 'Admin\Webinar\Webinar::add_data');
+    $routes->post('webinar/webinar/edit_data', 'Admin\Webinar\Webinar::edit_data');
+    $routes->post('webinar/webinar/delete_data', 'Admin\Webinar\Webinar::delete_data');
     
     $routes->post('dashboard/dashboard/get_address', 'Admin\Dashboard\Dashboard::get_address');
      

@@ -14,8 +14,8 @@
                             <tr>
                                 <th class="text-center py-0"><label class="checkbox-custome"><input type="checkbox" name="check-all-record"></label></th>
                                 <th class="text-center">No</th>
-                                <th class="text-center">Thumnail Youtube</th>
-                                <th class="text-center">JuduL Webinar</th>
+                                <th class="text-center">Thumbnail Youtube</th>
+                                <th class="text-center">Judul Webinar</th>
                                 <th class="text-center" width="15%">Action</th>
                             </tr>
                         </thead>
@@ -61,7 +61,7 @@
     </div> 
 </div>
 
-<?php include APPPATH.'views/admin/component/include_source.php'; ?>
+<?php echo view('admin/component/include_source'); ?>
 
 <script type="text/javascript">
     $(document).ready(function() {

@@ -61,9 +61,23 @@
         });
     });
 
-    $(document).on('show.bs.modal', '.modal', function() {
-        $(this)
-            .find(`input[name="${CSRF.name}"]`)
-            .val(CSRF.hash);
+    $(document).on('shown.bs.modal', '.modal', function() {
+        const form = this.querySelector('form');
+        if (!form) return;
+
+        form.querySelectorAll('input[type="hidden"]').forEach(input => {
+            if (input.name.startsWith('csrf') && input.name !== CSRF.name) {
+                input.remove();
+            }
+        });
+
+        let csrfInput = form.querySelector(`input[name="${CSRF.name}"]`);
+        if (!csrfInput) {
+            csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = CSRF.name;
+            form.appendChild(csrfInput);
+        }
+        csrfInput.value = CSRF.hash;
     });
 </script>

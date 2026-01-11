@@ -194,14 +194,13 @@ class MainModel extends Model
         return $this->db->table($table)->countAll();
     }
 
-    function datatable($valid_columns)
+    function datatable($builder, $valid_columns, $params)
     {
-        $start = $this->request->getVar('start') ?? 0;
-        $length = $this->request->getVar('length') ?? 10;
-        $order = $this->request->getVar('order');
-        $search = $this->request->getVar('search')['value'] ?? '';
+        $start  = $params['start'];
+        $length = $params['length'];
+        $order  = $params['order'];
+        $search = $params['search'];
 
-        $builder = $this->db->table($this->table);
         if ($order) {
             $col = $order[0]['column'];
             $dir = $order[0]['dir'] === 'asc' ? 'asc' : 'desc';

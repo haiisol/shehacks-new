@@ -2,12 +2,12 @@
 
 namespace App\Controllers\Admin\Auth;
 
-use App\Controllers\AdminController;
+use App\Controllers\FrontController;
 use Config\Services;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-class Login extends AdminController
+class Login extends FrontController
 {
     protected $db;
     protected $validation;

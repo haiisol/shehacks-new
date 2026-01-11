@@ -21,11 +21,6 @@ class AccessFilter implements FilterInterface
         if (!$access || $access['view_data'] != 1) {
             return redirect()->to(base_url('404'));
         }
-
-        session()->set('access_menu', [
-            'add'    => $access['create_data'] == 0 ? 'd-none' : '',
-            'delete' => $access['delete_data'] == 0 ? 'd-none' : '',
-        ]);
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null) {}

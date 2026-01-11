@@ -89,7 +89,7 @@
                     <?php } else { ?>
                         <div class="nav-item nav-item-user dropdown">
                             <a class="nav-link dropdown-toggle" href="#" onclick="event.preventDefault();" data-bs-toggle="dropdown">
-                                <div class="img-user"><?php echo strtoupper($user_name); ?></div>
+                                <div class="img-user"><?php echo strtoupper(initial_value($user_name)); ?></div>
                             </a>
 
                             <ul class="dropdown-menu dropdown-menu-end">

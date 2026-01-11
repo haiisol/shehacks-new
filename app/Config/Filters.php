@@ -91,7 +91,7 @@ class Filters extends BaseFilters
                     // 'auth/register/post_register_personal',
                     // 'auth/register/post_register_startup',
                     // 'admin/auth/login/post_login_verify',
-                    // 'analytic/post_cta_btn',
+                    'analytic/post_cta_btn',
                 ]
             ],
         ],
