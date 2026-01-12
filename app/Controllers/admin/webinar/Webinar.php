@@ -3,16 +3,13 @@
 namespace App\Controllers\Admin\Webinar;
 
 use App\Controllers\AdminController;
-use App\Models\MainModel;
 
 class Webinar extends AdminController
 {
-    protected $mainModel;
     protected $db;
     function __construct()
     {
-        $this->db        = db_connect();
-        $this->mainModel = new MainModel();
+        $this->db = db_connect();
     }
 
     public function index()
@@ -110,7 +107,7 @@ class Webinar extends AdminController
         $cact = $this->mainModel->check_access_action('webinar');
 
         if ($cact['access_view'] === 'd-none') {
-            return $this->response->setJSON([
+            return json_response([
                 'status'  => 0,
                 'message' => 'Gagal, tidak memiliki akses.'
             ]);

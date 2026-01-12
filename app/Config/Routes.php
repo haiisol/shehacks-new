@@ -86,6 +86,16 @@ $routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
     $routes->post('webinar/webinar/add_data', 'Admin\Webinar\Webinar::add_data');
     $routes->post('webinar/webinar/edit_data', 'Admin\Webinar\Webinar::edit_data');
     $routes->post('webinar/webinar/delete_data', 'Admin\Webinar\Webinar::delete_data');
+
+    $routes->get('voting/voting', 'Admin\Voting\Voting::index');
+    $routes->get('voting/voting/datatables', 'Admin\Voting\Voting::datatables');
+    
+    $routes->get('voting/voting/get_data', 'Admin\Voting\Voting::get_data');
+    $routes->post('voting/voting/detail_data', 'Admin\Voting\Voting::detail_data');
+    $routes->post('voting/voting/export', 'Admin\Voting\Voting::export');
+    $routes->post('voting/voting/add_data', 'Admin\Voting\Voting::add_data');
+    $routes->post('voting/voting/edit_data', 'Admin\Voting\Voting::edit_data');
+    $routes->post('voting/voting/delete_data', 'Admin\Voting\Voting::delete_data');
     
     $routes->post('dashboard/dashboard/get_address', 'Admin\Dashboard\Dashboard::get_address');
      

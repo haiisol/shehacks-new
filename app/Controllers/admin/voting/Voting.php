@@ -1,415 +1,340 @@
-<?php defined('BASEPATH') OR exit('No direct script access allowed');
+<?php
 
-class Voting extends CI_Controller {
+namespace App\Controllers\Admin\Voting;
 
-	function __construct()
+use App\Controllers\AdminController;
+
+class Voting extends AdminController
+{
+    protected $db;
+
+    function __construct()
     {
-        parent::__construct();
-        $this->main_model->logged_in_admin();
-        $this->id_admin = decrypt_url($this->session->userdata('key_auth_admin'));
+        $this->db = db_connect();
     }
 
-    public function Index()
+    public function index()
     {
-        $data = $this->main_model->check_access('voting');
-        
-        $data['title']       = 'Data Voting';
-        $data['description'] = '';
-        $data['keywords']    = '';
-        $data['page']           = 'admin/voting/voting';
-        $this->load->view('admin/index', $data);
+        $this->requireAccess('voting');
+
+        $data = [
+            'title' => 'Data Voting',
+            'page' => 'admin/voting/voting',
+        ];
+
+        $this->data = array_merge($this->data, $data);
+
+        return view('admin/index', $this->data);
     }
 
-
-    function _sql() 
+    protected function sql()
     {
-        $fil_kategori = trim($this->input->get('fil_kategori', TRUE) ?? '');
+        $fil_kategori = trim($this->request->getGet('fil_kategori') ?? 'all');
 
-        $this->db->select('m.id_voting, m.nama_founders, m.nama_usaha, m.bidang_usaha, m.kategori, m.logo , m.video_upload ');
-        $this->db->from('tb_voting m');
-        $this->db->where('m.status_delete', 0);
+        $builder = $this->db->table('tb_voting m')
+            ->select('m.id_voting, m.nama_founders, m.nama_usaha, m.bidang_usaha, m.kategori, m.logo, m.video_upload')
+            ->where('m.status_delete', 0);
 
-        if ($fil_kategori) {
-            $this->db->where('m.kategori', $fil_kategori);
+        if ($fil_kategori !== 'all') {
+            $builder->where('m.kategori', $fil_kategori);
         }
 
-        $this->db->order_by('m.id_voting DESC');
-
-        return $this->db->get();
+        return $builder->orderBy('m.id_voting', 'DESC');
     }
 
-    function datatables()
-    {   
-        $this->main_model->check_access('voting');
+    public function datatables()
+    {
+        $this->requireAccess('voting');
 
-        $this->load->library('form_validation');
-        $row = array(
-            "fil_kategori"     => $this->input->get('fil_kategori', TRUE),
-        ); 
-
-        $this->form_validation->set_data($row);
-        $this->form_validation->set_rules('fil_kategori', 'fil_kategori', 'trim|alpha_numeric');
-
-        if ( $this->form_validation->run() === false ) {
-            $response['status']  = 0;
-            $response['message'] = validation_errors();
-            json_response($response);
-            return;
+        if (
+            !$this->validate([
+                'fil_kategori' => 'permit_empty|alpha_numeric'
+            ])
+        ) {
+            return json_response([
+                'status' => 0,
+                'message' => $this->validator->getErrors(),
+                'csrf_name' => csrf_token(),
+                'csrf_hash' => csrf_hash(),
+            ]);
         }
-        
-        $valid_columns = array(
+
+        $validColumns = [
             1 => 'm.id_voting',
             4 => 'm.nama_founders',
             5 => 'm.nama_usaha',
-        );
+        ];
 
-        $this->main_model->datatable($valid_columns);
+        $params = [
+            'start' => (int) $this->request->getGet('start'),
+            'length' => (int) $this->request->getGet('length'),
+            'order' => $this->request->getGet('order'),
+            'search' => $this->request->getGet('search')['value'] ?? '',
+        ];
 
-        $query = $this->_sql();
+        $baseBuilder = $this->sql();
 
-        $no   = $this->input->get('start');
-        $data = array();
+        $dataBuilder = clone $baseBuilder;
+        $this->mainModel->datatable($dataBuilder, $validColumns, $params);
+        $rows = $dataBuilder->get()->getResultArray();
 
-        foreach($query->result_array() as $key) {
+        $filteredBuilder = clone $baseBuilder;
+        $this->mainModel->datatable($filteredBuilder, $validColumns, $params);
+        $recordsFiltered = $filteredBuilder->countAllResults();
+
+        $recordsTotal = $baseBuilder->countAllResults();
+
+        $no = $params['start'];
+        $data = [];
+
+        foreach ($rows as $row) {
             $no++;
+            $cact = $this->mainModel->check_access_action('voting');
 
-            $cact = $this->main_model->check_access_action('voting');
+            $url_image = url_image($row['logo'], 'image-logo');
 
-            $url_image = $this->main_model->url_image($key['logo'], 'image-logo');
+            $nama_founders = $row['nama_founders']
+                ? character_limiter($row['nama_founders'], 30)
+                : '-';
 
-            if ($key['nama_founders']) {
-                $nama_founders = character_limiter($key['nama_founders'], 30);
-            } else {
-                $nama_founders = '-';
-            }
+            $nama_usaha = $row['nama_usaha']
+                ? character_limiter($row['nama_usaha'], 30)
+                : '-';
 
-            if ($key['nama_usaha']) {
-                $nama_usaha = character_limiter($key['nama_usaha'], 30);
-            } else {
-                $nama_usaha = '-';
-            }
+            $kategori = $row['kategori'] === 'Ideasi'
+                ? '<span class="badge bg-danger">' . $row['kategori'] . '</span>'
+                : '<span class="badge bg-success">' . $row['kategori'] . '</span>';
 
-            if ($key['kategori'] == 'Ideasi') {
-                $kategori = '<span class="badge bg-danger">'.$key['kategori'].'</span> ';
-            } else {
-                $kategori = '<span class="badge bg-success">'.$key['kategori'].'</span>';
-            }
+            $file = $row['video_upload']
+                ? "<a href='https://www.youtube.com/embed/{$row['video_upload']}?autoplay=1' target='_blank'>Lihat Link</a>"
+                : '-';
 
-            if ($key['video_upload'] == '') {
-                $file = "-";
-            } else {
-                $file = "<a href='https://www.youtube.com/embed/".$key['video_upload']."?autoplay=1' target='_blank'>Lihat Link</a>";
-            }
-
-            $data[] = array(
-                '<label class="checkbox-custome"><input type="checkbox" name="check-record" value="'.$key['id_voting'].'" class="check-record"></label>',
+            $data[] = [
+                '<label class="checkbox-custome">
+                    <input type="checkbox" class="check-record" value="' . $row['id_voting'] . '">
+                 </label>',
                 $no,
-                '<img src="'.$url_image.'" class="img-fluid">',
+                '<img src="' . $url_image . '" class="img-fluid">',
                 $kategori,
                 $nama_founders,
                 $nama_usaha,
                 $file,
-                '<div class="dropdown dropdown-action '.$cact['access_action'].' options ms-auto text-center">
-                     <div class="dropdown-toggle dropdown-toggle-nocaret" data-bs-toggle="dropdown" id="dropdown-action">
+                '<div class="dropdown dropdown-action ' . $cact['access_action'] . '">
+                    <div class="dropdown-toggle" data-bs-toggle="dropdown">
                         <ion-icon name="ellipsis-horizontal-sharp"></ion-icon>
                     </div>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
-                        <a href="#" class="dropdown-item '.$cact['access_edit'].'" id="edit-data" data="'.$key['id_voting'].'">
-                            <ion-icon name="create-sharp"></ion-icon>Edit</a>
-                        <a href="#" class="dropdown-item '.$cact['access_delete'].'" id="delete-data" data="'.$key['id_voting'].'">
-                            <ion-icon name="trash-sharp"></ion-icon>Delete</a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item ' . $cact['access_edit'] . '" data="' . $row['id_voting'] . '" id="edit-data">
+                            <ion-icon name="create-sharp"></ion-icon> Edit
+                        </a>
+                        <a class="dropdown-item ' . $cact['access_delete'] . '" data="' . $row['id_voting'] . '" id="delete-data">
+                            <ion-icon name="trash-sharp"></ion-icon> Delete
+                        </a>
                     </div>
                 </div>'
-            );
+            ];
         }
 
-        $response['draw']            = intval($this->input->get("draw"));
-        $response['recordsTotal']    = $this->_sql()->num_rows();
-        $response['recordsFiltered'] = $this->_sql()->num_rows();
-        $response['data']            = $data;
-
-        json_response($response);
+        return json_response([
+            'draw' => (int) $this->request->getGet('draw'),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ]);
     }
 
-    function add_data()
-    {   
-        $this->main_model->check_access('voting');
-        $cact = $this->main_model->check_access_action('voting');
-
-        if ($cact['access_add'] == 'd-none') {
-            $response['status']  = 0;
-            $response['message'] = 'Gagal, tidak memiliki akses.';
-        } else { 
-            
-            if (!empty($_FILES['logo']['name'])) { 
-                $data['logo'] = $this->upload_image(); 
-            }
-
-            $data['kategori']               = sanitize_input($this->input->post('kategori'));
-            $data['nama_founders']          = sanitize_input($this->input->post('nama_founders'));
-            $data['nama_usaha']             = sanitize_input($this->input->post('nama_usaha'));
-            $data['bidang_usaha']           = sanitize_input($this->input->post('bidang_usaha'));
-            $data['description']            = sanitize_input_textEditor($this->input->post('description'));
-            $data['domisili']               = sanitize_input($this->input->post('domisili'));
-            $data['video_upload']           = sanitize_input($this->input->post('video_upload'));
-            $data['date_create']            = date_create('now', timezone_open('Asia/Jakarta'))->format('Y-m-d H:i:s');
-
-            $query = $this->db->insert('tb_voting', $data);
-
-            if($query) {
-                $response['status']  = 1;
-                $response['message'] = 'Data berhasil ditambahkan.';
-            } else {
-                $response['status']  = 2;
-                $response['message'] = 'Gagal menambah data.';
-            }
-        }
-
-        json_response($response);
-    }
-
-
-    function get_data()
-    {   
-        $this->main_model->check_access('voting');
-        $cact = $this->main_model->check_access_action('voting');
-
-        if ($cact['access_view'] == 'd-none') {
-            $response['status']  = 0;
-            $response['message'] = 'Gagal, tidak memiliki akses.';
-        } else { 
-
-            $this->load->library('form_validation');
-            $row = array(
-                "id"     => (int) $this->input->get('id'),
-            ); 
-
-            $this->form_validation->set_data($row);
-            $this->form_validation->set_rules('id', 'id', 'trim|required|numeric');
-
-            if ( $this->form_validation->run() === false ) {
-                $response['status']  = 0;
-                $response['message'] = validation_errors();
-                json_response($response);
-                return;
-            }
-
-            $id = (int) $this->input->get('id');
-
-            $query = $this->db->select('*')
-                    ->from('tb_voting')
-                    ->where('id_voting', $id)
-                    ->get()
-                    ->row_array();
-
-            $logo = $this->main_model->url_image($query['logo'], 'image-logo');
-
-            $data['id_voting']              = $query['id_voting'];
-            $data['kategori']               = $query['kategori'];
-            $data['nama_founders']          = $query['nama_founders'];
-            $data['nama_usaha']             = $query['nama_usaha'];
-            $data['bidang_usaha']           = $query['bidang_usaha'];
-            $data['video_upload']           = $query['video_upload'];
-            $data['logo']                   = $logo;
-            $data['description']            = $query['description'];
-            $data['domisili']               = $query['domisili'];
-        }
-
-        json_response($data);
-    }
-
-
-    function edit_data()
-    {   
-        $this->main_model->check_access('voting');
-        $cact = $this->main_model->check_access_action('voting');
-        $id = (int) $this->input->post('id');
-
-        if ($cact['access_edit'] == 'd-none') {
-            $response['status']  = 0;
-            $response['message'] = 'Gagal, tidak memiliki akses.';
-        } else { 
-
-            $this->load->library('form_validation');
-            $row = array(
-                "id"     => $id,
-            ); 
-
-            $this->form_validation->set_data($row);
-            $this->form_validation->set_rules('id', 'id', 'trim|required|numeric');
-
-            if ( $this->form_validation->run() === false ) {
-                $response['status']  = 0;
-                $response['message'] = validation_errors();
-                json_response($response);
-                return;
-            }
-
-            if (!empty($_FILES['logo']['name'])) { 
-                $data['logo'] = $this->upload_image(); 
-            }
-
-            $data['kategori']               = sanitize_input($this->input->post('kategori'));
-            $data['nama_founders']          = sanitize_input($this->input->post('nama_founders'));
-            $data['nama_usaha']             = sanitize_input($this->input->post('nama_usaha'));
-            $data['bidang_usaha']           = sanitize_input($this->input->post('bidang_usaha'));
-            $data['description']            = sanitize_input_textEditor($this->input->post('description'));
-            $data['domisili']               = sanitize_input($this->input->post('domisili'));
-            $data['video_upload']           = sanitize_input($this->input->post('video_upload'));
-
-            $query = $this->main_model->update_data('tb_voting', $data, 'id_voting', $id);
-
-            if($query) {
-                $response['status']  = 3;
-                $response['message'] = 'Data berhasil Disimpan.';
-            } else {
-                $response['status']  = 4;
-                $response['message'] = 'Gagal menyimpan data.';
-            }
-        }
-
-        json_response($response);
-    }
-
-    function upload_image()
+    public function add_data()
     {
-        $config['upload_path']  = './file_media/image-logo/';
-        $config['allowed_types']= 'jpg|jpeg|png';
-        $config['file_name']    = 'logo-voting-'.substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 5);
+        $this->requireAccess('voting');
+        $cact = $this->mainModel->check_access_action('voting');
 
-        if ($this->input->post('param') == 'edit') {
-            $id = $this->input->post('id');
-            
-            $query = $this->db->query("SELECT logo FROM tb_voting WHERE id_voting = ".$id." ")->row_array();
-            
-            if($query['logo']) {
-                if (file_exists(FCPATH.'/file_media/image-logo/'.$query['logo'])) {
-                    $config['overwrite'] = true;
-                    unlink(FCPATH.'/file_media/image-logo/'.$query['logo']);
-                }
+        if ($cact['access_add'] === 'd-none') {
+            return json_response([
+                'status' => 0,
+                'message' => 'Gagal, tidak memiliki akses.',
+                'csrf_name' => csrf_token(),
+                'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
+        $data = [
+            'kategori' => sanitize_input($this->request->getPost('kategori')),
+            'nama_founders' => sanitize_input($this->request->getPost('nama_founders')),
+            'nama_usaha' => sanitize_input($this->request->getPost('nama_usaha')),
+            'bidang_usaha' => sanitize_input($this->request->getPost('bidang_usaha')),
+            'description' => sanitize_input_textEditor($this->request->getPost('description')),
+            'domisili' => sanitize_input($this->request->getPost('domisili')),
+            'video_upload' => sanitize_input($this->request->getPost('video_upload')),
+            'date_create' => date('Y-m-d H:i:s'),
+        ];
+
+        if ($file = $this->request->getFile('logo')) {
+            if ($file->isValid()) {
+                $data['logo'] = $this->upload_image();
             }
         }
-        
-        $this->upload->initialize($config);
 
-        if ($this->upload->do_upload('logo')) {
-            return $this->upload->data('file_name');
-        }
-        return '';
+        $insert = $this->db->table('tb_voting')->insert($data);
+
+        return json_response([
+            'status' => $insert ? 1 : 2,
+            'message' => $insert ? 'Data berhasil ditambahkan.' : 'Gagal menambah data.',
+            'csrf_name' => csrf_token(),
+            'csrf_hash' => csrf_hash(),
+        ]);
     }
 
-    function delete_data()
-    {   
-        $this->main_model->check_access('voting');
-        $cact = $this->main_model->check_access_action('voting');
-
-        if ($cact['access_delete'] == 'd-none') {
-            $response['status']  = 0;
-            $response['message'] = 'Gagal, tidak memiliki akses.';
-
-            json_response($response);
-
-        } else { 
-
-            $this->load->library('form_validation');
-            $row = array(
-                "method"        => $this->input->post('method', TRUE),
-                "id"            => $this->input->post('id', TRUE),
-            ); 
-
-            $this->form_validation->set_data($row);
-            $this->form_validation->set_rules('method', 'method', 'trim|required|alpha_numeric');
-            $this->form_validation->set_rules('id', 'id', 'trim|required|callback_valid_angka_koma');
-
-            if ( $this->form_validation->run() === false ) {
-                $response['status']  = 0;
-                $response['message'] = validation_errors();
-                json_response($response);
-                return;
-            }
-
-            $method = $this->input->post('method', TRUE);
-
-            if($method == 'single')
-            {
-                $id = $this->input->post('id', TRUE);
-
-                $this->delete_file($id);
-
-                $data_delete['status_delete']  = 1 ;
-                
-                $this->main_model->update_data('tb_voting', $data_delete, 'id_voting', $id);
-
-                $response['status'] = 1;
-
-                json_response($response);
-            }
-            else
-            {
-                $json = $this->input->post('id', TRUE);
-                $id = array();
-
-                if (strlen($json) > 0) {
-                    $id = json_decode($json);
-                }
-
-                if (count($id) > 0) {
-                    $id_str = "";
-                    $id_str = implode(',', $id);
-
-                    $query = $this->db->query("UPDATE tb_voting SET status_delete = 1 WHERE id_voting in (".$id_str.")");
-
-                    $response['status'] = 2;
-                    
-                    json_response($response);
-                }
-            }
-        }
-    }
-
-    public function valid_angka_koma($str) {
-
-        if (is_numeric($str)) {
-            return TRUE;
-        }
-    
-        if (preg_match('/^\["[0-9]+"(,"[0-9]+")*\]$/', $str)) {
-            return TRUE;
-        }
-    
-        $this->form_validation->set_message('valid_angka_koma', 'Kolom {field} hanya boleh berisi angka atau array angka dengan koma.');
-        return FALSE;
-    }
-
-
-    private function delete_file($id)
-    {   
-        $yes = "";
-        $query = $this->db->query("SELECT * FROM tb_voting WHERE id_voting = '".$id."'")->result_array();
-        foreach ($query as $key) {
-            if ($key['logo'])
-            {
-                $filename = explode(".", $key['logo'])[0];
-                $yes = array_map('unlink', glob(FCPATH."file_media/image-logo/$filename.*"));
-            }
-        }
-        return $yes;
-    }
-
-    private function delete_file_all($id)
+    public function get_data()
     {
-        $yes = "";
-        $cek = $this->db->query("SELECT * FROM tb_voting WHERE id_voting in (".$id.") ")->result_array();
-        foreach ($cek as $key) {
-            if ($key['logo'])
-            {
-                $filename = explode(".", $key['logo'])[0];
-                $yes = array_map('unlink', glob(FCPATH."file_media/image-logo/$filename.*"));
-            }
+        $this->requireAccess('voting');
+
+        $cact = $this->mainModel->check_access_action('voting');
+
+        if ($cact['access_view'] === 'd-none') {
+            return json_response([
+                'status' => 0,
+                'message' => 'Gagal, tidak memiliki akses.',
+            ]);
         }
-            return $yes;
+
+        if (!$this->validate(['id' => 'required|numeric'])) {
+            return json_response([
+                'status' => 0,
+                'message' => $this->validator->getErrors(),
+            ]);
+        }
+
+        $id = (int) $this->request->getGet('id');
+
+        $row = $this->db->table('tb_voting')
+            ->where('id_voting', $id)
+            ->get()
+            ->getRowArray();
+
+        $row['logo'] = url_image($row['logo'], 'image-logo');
+
+        return json_response($row);
     }
 
+    public function edit_data()
+    {
+        $this->requireAccess('voting');
+
+        $cact = $this->mainModel->check_access_action('voting');
+
+        if ($cact['access_edit'] === 'd-none') {
+            return json_response([
+                'status' => 0,
+                'message' => 'Gagal, tidak memiliki akses.'
+            ]);
+        }
+
+        $id = (int) $this->request->getPost('id');
+
+        $rules = [
+            'id' => 'required|numeric'
+        ];
+
+        if (!$this->validate($rules)) {
+            return json_response([
+                'status' => 0,
+                'message' => $this->validator->listErrors()
+            ]);
+        }
+
+        $data = [
+            'kategori' => sanitize_input($this->request->getPost('kategori')),
+            'nama_founders' => sanitize_input($this->request->getPost('nama_founders')),
+            'nama_usaha' => sanitize_input($this->request->getPost('nama_usaha')),
+            'bidang_usaha' => sanitize_input($this->request->getPost('bidang_usaha')),
+            'description' => sanitize_input_textEditor($this->request->getPost('description')),
+            'domisili' => sanitize_input($this->request->getPost('domisili')),
+            'video_upload' => sanitize_input($this->request->getPost('video_upload')),
+        ];
+
+        if ($file = $this->request->getFile('logo')) {
+            if ($file->isValid() && !$file->hasMoved()) {
+                $data['logo'] = $this->upload_image();
+            }
+        }
+
+        $updated = $this->db->table('tb_voting')
+            ->where('id_voting', $id)
+            ->update($data);
+
+        return json_response([
+            'status' => $updated ? 3 : 4,
+            'message' => $updated
+                ? 'Data berhasil Disimpan.'
+                : 'Gagal menyimpan data.'
+        ]);
+    }
+
+    protected function upload_image()
+    {
+        $file = $this->request->getFile('logo');
+
+        if (!$file || !$file->isValid()) {
+            return '';
+        }
+
+        $allowed = ['jpg', 'jpeg', 'png'];
+        $ext = $file->guessExtension();
+
+        if (!in_array($ext, $allowed, true)) {
+            return '';
+        }
+
+        $newName = 'logo-voting-' . strtoupper(random_string('alnum', 5)) . '.' . $ext;
+        $file->move(FCPATH . 'file_media/image-logo', $newName, true);
+
+        return $newName;
+    }
+
+    public function delete_data()
+    {
+        $this->requireAccess('voting');
+
+        $cact = $this->mainModel->check_access_action('voting');
+
+        if ($cact['access_delete'] === 'd-none') {
+            return json_response([
+                'status' => 0,
+                'message' => 'Gagal, tidak memiliki akses.',
+            ]);
+        }
+
+        $method = $this->request->getPost('method');
+        $id = $this->request->getPost('id');
+
+        if ($method === 'single') {
+            $this->delete_file($id);
+            $this->db->table('tb_voting')->where('id_voting', $id)->update(['status_delete' => 1]);
+            $status = 1;
+        } else {
+            $ids = json_decode($id, true);
+            if ($ids) {
+                $this->db->table('tb_voting')->whereIn('id_voting', $ids)->update(['status_delete' => 1]);
+                $status = 2;
+            }
+        }
+
+        return json_response([
+            'status' => $status ?? 0,
+            'csrf_name' => csrf_token(),
+            'csrf_hash' => csrf_hash(),
+        ]);
+    }
+
+    protected function delete_file($id)
+    {
+        $row = $this->db->table('tb_voting')->where('id_voting', $id)->get()->getRowArray();
+        if (!$row || !$row['logo'])
+            return;
+
+        $path = FCPATH . 'file_media/image-logo/' . $row['logo'];
+        if (is_file($path))
+            unlink($path);
+    }
 
 }
-

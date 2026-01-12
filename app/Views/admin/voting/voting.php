@@ -9,9 +9,9 @@
         <form method="post" id="form-filter" class="form-style">
             <div class="form-group mb-2">
                 <select name="fil_kategori" id="fil_kategori" data-placeholder="Pilih Kategori" class="form-control form-control-sm select2-custome" style="width: 500px; max-width: 500px">
-                    <option value="0" selected>All Kategori User</option>
-                        <option value="Ideasi">Ideasi</option>
-                        <option value="Innovate">Innovate</option>
+                    <option value="all" selected>All Kategori User</option>
+                    <option value="Ideasi">Ideasi</option>
+                    <option value="Innovate">Innovate</option>
                 </select>
             </div>
             
@@ -134,8 +134,7 @@
     </div> 
 </div>
 
-
-<?php include APPPATH.'views/admin/component/include_source.php'; ?>
+<?php echo view('admin/component/include_source'); ?>
 
 <script type="text/javascript">
 
