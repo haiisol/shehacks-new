@@ -111,6 +111,11 @@ $routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
     $routes->get('setting/website', 'Admin\Setting\Website::index');
     $routes->get('setting/website/get_data', 'Admin\Setting\Website::get_data');
     $routes->post('setting/website/edit_data', 'Admin\Setting\Website::edit_data');
+
+    $routes->get('setting/email-akun', 'Admin\Setting\EmailAkun::index');
+    $routes->get('setting/email-akun/get_data', 'Admin\Setting\EmailAkun::get_data');
+    $routes->post('setting/email-akun/edit_data', 'Admin\Setting\EmailAkun::edit_data');
+    $routes->post('setting/email-akun/testing_kirim', 'Admin\Setting\EmailAkun::testing_kirim');
     
     $routes->post('dashboard/dashboard/get_address', 'Admin\Dashboard\Dashboard::get_address');
      

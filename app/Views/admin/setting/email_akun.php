@@ -154,7 +154,7 @@
 
         function load_data() {
             $.ajax({
-                url   : '<?php echo base_url();?>admin/setting/email_akun/get_data',
+                url   : '<?php echo base_url();?>admin/setting/email-akun/get_data',
                 success  : function(response) {
                     $('#id').val(response.id);
                     $('#host').val(response.host);
@@ -178,7 +178,7 @@
                     $('#submit-form-data').buttonLoader('start');
 
                     $.ajax({
-                        url    : '<?php echo base_url();?>admin/setting/email_akun/edit_data',
+                        url    : '<?php echo base_url();?>admin/setting/email-akun/edit_data',
                         method : 'post',
                         data   : new FormData(this),
                         dataType : 'json',
@@ -241,7 +241,7 @@
 
                     $.ajax({
                         method : 'POST',
-                        url    : '<?php echo base_url();?>admin/setting/email_akun/testing_kirim',
+                        url    : '<?php echo base_url();?>admin/setting/email-akun/testing_kirim',
                         data   : new FormData(this),
                         dataType: 'JSON',
                         contentType : false,
