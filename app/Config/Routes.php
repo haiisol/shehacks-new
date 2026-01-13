@@ -88,14 +88,29 @@ $routes->group('admin', ['filter' => 'adminauth'], function ($routes) {
     $routes->post('webinar/webinar/delete_data', 'Admin\Webinar\Webinar::delete_data');
 
     $routes->get('voting/voting', 'Admin\Voting\Voting::index');
-    $routes->get('voting/voting/datatables', 'Admin\Voting\Voting::datatables');
-    
     $routes->get('voting/voting/get_data', 'Admin\Voting\Voting::get_data');
+    $routes->get('voting/voting/datatables', 'Admin\Voting\Voting::datatables');
+
+    $routes->get('voting/hasil', 'Admin\Voting\Hasil::index');
+    $routes->get('voting/hasil/datatables', 'Admin\Voting\Hasil::datatables');
+    $routes->get('voting/hasil/export', 'Admin\Voting\Hasil::export');
+    $routes->get('voting/hasil/export_detail/(:any)', 'Admin\Voting\Hasil::export_detail/$1');
+    $routes->get('voting/hasil/datatables_detail/(:any)', 'Admin\Voting\Hasil::datatables_detail/$1');
+    $routes->get('voting/hasil/detail/(:any)', 'Admin\Voting\Hasil::detail/$1');
+
     $routes->post('voting/voting/detail_data', 'Admin\Voting\Voting::detail_data');
     $routes->post('voting/voting/export', 'Admin\Voting\Voting::export');
     $routes->post('voting/voting/add_data', 'Admin\Voting\Voting::add_data');
     $routes->post('voting/voting/edit_data', 'Admin\Voting\Voting::edit_data');
     $routes->post('voting/voting/delete_data', 'Admin\Voting\Voting::delete_data');
+
+    $routes->get('edit_profile', 'Admin\EditProfile::index');
+    $routes->get('edit_profile/get_data', 'Admin\EditProfile::get_data');
+    $routes->post('edit_profile/edit_data', 'Admin\EditProfile::edit_data');
+
+    $routes->get('setting/website', 'Admin\Setting\Website::index');
+    $routes->get('setting/website/get_data', 'Admin\Setting\Website::get_data');
+    $routes->post('setting/website/edit_data', 'Admin\Setting\Website::edit_data');
     
     $routes->post('dashboard/dashboard/get_address', 'Admin\Dashboard\Dashboard::get_address');
      

@@ -59,7 +59,7 @@ class Hasil extends AdminController
                 'fil_kategori' => 'permit_empty|alpha_numeric'
             ])
         ) {
-            return $this->response->setJSON([
+            return json_response([
                 'status' => 0,
                 'message' => $this->validator->listErrors()
             ]);
@@ -93,6 +93,8 @@ class Hasil extends AdminController
 
         $no = $params['start'];
         $data = [];
+
+        dd($rows);
 
         foreach ($rows as $row) {
             $no++;
@@ -139,7 +141,7 @@ class Hasil extends AdminController
             ];
         }
 
-        return $this->response->setJSON([
+        return json_response([
             'draw' => (int) $this->request->getGet('draw'),
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
@@ -220,77 +222,83 @@ class Hasil extends AdminController
         return view('admin/index', $this->data);
     }
 
-    // TO DO: Continue rewrite this function
-
-    function _sql_detail($id_voting_enc)
+    protected function _sql_detail($id_voting_enc)
     {
+        $id = decrypt_url($id_voting_enc);
 
-        $id_voting = decrypt_url($id_voting_enc);
-
-        $this->db->select('u.id_user, u.nama, u.telp, u.email');
-        $this->db->from('tb_voting_user m');
-        $this->db->join('tb_user u', 'm.id_user = u.id_user', 'left');
-        $this->db->where('m.id_voting', $id_voting);
-
-        return $this->db->get();
+        return $this->db->table('tb_voting_user m')
+            ->select('u.id_user, u.nama, u.telp, u.email')
+            ->join('tb_user u', 'u.id_user = m.id_user', 'left')
+            ->where('m.id_voting', $id);
     }
 
     function datatables_detail($id_voting_enc)
     {
-        $this->main_model->check_access('voting');
-        $cact = $this->main_model->check_access_action('voting');
+        $this->requireAccess('voting');
 
-        if ($cact['access_view'] == 'd-none') {
-            $response['status'] = 0;
-            $response['message'] = 'Gagal, tidak memiliki akses.';
+        $cact = $this->mainModel->check_access_action('voting');
 
-        } else {
-
-            $valid_columns = array(
-                0 => 'id_user',
-                1 => 'nama',
-                2 => 'telp',
-                3 => 'email',
-            );
-
-            $this->main_model->datatable($valid_columns);
-
-            $query = $this->_sql_detail($id_voting_enc);
-
-            $no = $this->input->get('start');
-            $data = array();
-
-            foreach ($query->result_array() as $key) {
-                $no++;
-
-                $cact = $this->main_model->check_access_action('modul');
-
-                $data[] = array(
-                    $no,
-                    $key['nama'],
-                    $key['telp'],
-                    $key['email']
-                );
-            }
-
-            $response['draw'] = intval($this->input->get("draw"));
-            $response['recordsTotal'] = $this->_sql_detail($id_voting_enc)->num_rows();
-            $response['recordsFiltered'] = $this->_sql_detail($id_voting_enc)->num_rows();
-            $response['data'] = $data;
+        if ($cact['access_view'] === 'd-none') {
+            return json_response([
+                'status' => 0,
+                'message' => 'Gagal, tidak memiliki akses.',
+            ]);
         }
 
-        json_response($response);
+        $validColumns = [
+            0 => 'id_user',
+            1 => 'nama',
+            2 => 'telp',
+            3 => 'email',
+        ];
+
+        $params = [
+            'start' => (int) $this->request->getGet('start'),
+            'length' => (int) $this->request->getGet('length'),
+            'order' => $this->request->getGet('order'),
+            'search' => $this->request->getGet('search')['value'] ?? '',
+        ];
+
+        $baseBuilder = $this->_sql_detail($id_voting_enc);
+
+        $dataBuilder = clone $baseBuilder;
+        $this->mainModel->datatable($dataBuilder, $validColumns, $params);
+        $rows = $dataBuilder->get()->getResultArray();
+
+        $filteredBuilder = clone $baseBuilder;
+        $this->mainModel->datatable($filteredBuilder, $validColumns, $params);
+        $recordsFiltered = $filteredBuilder->countAllResults();
+
+        $recordsTotal = $baseBuilder->countAllResults();
+        $no = $params['start'];
+        $data = [];
+
+        foreach ($rows as $row) {
+            $no++;
+            $data[] = [
+                $no,
+                $row['nama'],
+                $row['telp'],
+                $row['email']
+            ];
+        }
+
+        return json_response([
+            'draw' => (int) $this->request->getGet('draw'),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data
+        ]);
     }
 
     function export_detail($id_enc)
     {
-        $this->load->library('table');
+        $baseBuilder = $this->_sql_detail($id_enc);
 
-        $query = $this->_sql_detail($id_enc);
+        $dataBuilder = clone $baseBuilder;
+        $rows = $dataBuilder->get()->getResultArray();
 
-        $output = '';
-
-        $output .=
+        $output =
             '<table class="table" border="1">
                 <thead>
                     <th>No</th>
@@ -301,32 +309,27 @@ class Hasil extends AdminController
                 <tbody>';
 
         $no = 0;
-        foreach ($query->result_array() as $key) {
+        foreach ($rows as $row) {
             $no++;
 
             $output .= '
                         <tr>
                             <td>' . $no . '</td>
-                            <td>' . $key['nama'] . '</td>
-                            <td>' . $key['telp'] . '</td>
-                            <td>' . $key['email'] . '</td>
+                            <td>' . $row['nama'] . '</td>
+                            <td>' . $row['telp'] . '</td>
+                            <td>' . $row['email'] . '</td>
                         </tr>';
         }
 
 
-        $output .=
-            '</tbody>
-            </table>';
+        $output .= '</tbody></table>';
 
-        $filename = "Export-Data-Voting-User-" . date('Y-m-d-h-i-s');
-
-        header("Content-type: application/octet-stream");
-        header("Content-Disposition: attachment; filename=" . $filename . ".xls");
-        header("Cache-Control: max-age=0");
-
-        echo $output;
+        return $this->response
+            ->setHeader('Content-Type', 'application/vnd.ms-excel')
+            ->setHeader(
+                'Content-Disposition',
+                'attachment; filename=Export-Data-Voting-User-' . date('Y-m-d-H-i-s') . '.xls'
+            )
+            ->setBody($output);
     }
-
-
 }
-

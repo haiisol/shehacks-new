@@ -164,12 +164,12 @@
                         processData : false,
                         success:function(response) {
                             $('#btn-simpan').buttonLoader('stop');
-                            if(response == 1) {
+                            if(response.status == 1) {
                                 load_data();
                                 $("#form-tambah-data")[0].reset();
                                 notif_success('Data berhasil disimpan.');
                             } 
-                            else if (response == 2) {
+                            else if (response.status == 2) {
                                 notif_success('Data berhasil disimpan, silahkan login ulang.');
                                 top.location.href='<?php echo base_url();?>auth/login/logout';
                             }

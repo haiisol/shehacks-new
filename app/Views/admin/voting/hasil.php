@@ -47,8 +47,7 @@
     </div>
 </div>
 
-
-<?php include APPPATH.'views/admin/component/include_source.php'; ?>
+<?php echo view('admin/component/include_source'); ?>
 
 <script type="text/javascript">
     $(document).ready(function() {
