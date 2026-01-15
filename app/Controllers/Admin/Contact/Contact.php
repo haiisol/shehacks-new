@@ -59,8 +59,7 @@ class Contact extends AdminController
     {
         $this->requireAccess('contact');
 
-
-        $valid_columns = array(
+        $validColumns = array(
             1 => 'c.id',
             2 => 'c.name',
             3 => 'c.email',
@@ -68,25 +67,37 @@ class Contact extends AdminController
             5 => 'c.date',
         );
 
-        $this->main_model->datatable($valid_columns);
+        $params = [
+            'start' => (int) $this->request->getGet('start'),
+            'length' => (int) $this->request->getGet('length'),
+            'order' => $this->request->getGet('order'),
+            'search' => $this->request->getGet('search')['value'] ?? '',
+        ];
 
-        $query = $this->_sql();
+        $baseBuilder = $this->sql();
 
-        $no   = $this->input->get('start');
-        $data = array();
+        $dataBuilder = clone $baseBuilder;
+        $this->mainModel->datatable($dataBuilder, $validColumns, $params);
+        $rows = $dataBuilder->get()->getResultArray();
 
-        foreach ($query->result_array() as $key) {
+        $filteredBuilder = clone $baseBuilder;
+        $this->mainModel->datatable($filteredBuilder, $validColumns, $params);
+        $recordsFiltered = $filteredBuilder->countAllResults();
+
+        $recordsTotal = $baseBuilder->countAllResults();
+
+        $no = (int) $this->request->getGet('start');
+        $data = [];
+
+        foreach ($rows as $key) {
             $no++;
 
-            $cact = $this->main_model->check_access_action('contact');
-
+            $cact = $this->mainModel->check_access_action('contact');
 
             // date update
-            if ($key['date'] == '0000-00-00 00:00:00') {
-                $tanggal = '-';
-            } else {
-                $tanggal = time_ago_from_3($key['date']);
-            }
+            $tanggal = ($key['date'] === '0000-00-00 00:00:00')
+                ? '-'
+                : time_ago_from_3($key['date']);
 
             $data[] = array(
                 '<label class="checkbox-custome"><input type="checkbox" name="check-record" value="' . $key['id'] . '" class="check-record"></label>',
@@ -107,12 +118,12 @@ class Contact extends AdminController
             );
         }
 
-        $response['draw']            = intval($this->input->get('draw'));
-        $response['recordsTotal']    = $this->_sql()->num_rows();
-        $response['recordsFiltered'] = $this->_sql()->num_rows();
-        $response['data']            = $data;
-
-        json_response($response);
+        return json_response([
+            'draw' => (int) $this->request->getGet('draw'),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data
+        ]);
     }
 
 
